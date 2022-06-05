@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+      <TargetFramework>netstandard2.0</TargetFramework>
+      <Version>0.0.0</Version>
+      <Title>PagerDuty</Title>
+      <PackageId>PagerDuty</PackageId>
+      <Product>PagerDuty</Product>
+      <Description>Client that sends Alert and Change events to the PagerDuty Events API V2</Description>
+      <Authors>Ben Hutchison</Authors>
+      <Company>Ben Hutchison</Company>
+      <Copyright>© 2022 Ben Hutchison</Copyright>
+      <RepositoryUrl>https://github.com/Aldaviva/PagerDuty.git</RepositoryUrl>
+      <RepositoryType>git</RepositoryType>
+      <PackageTags>pagerduty</PackageTags>
+      <PackageProjectUrl>https://github.com/Aldaviva/PagerDuty</PackageProjectUrl>
+      <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+      <RootNamespace>Pager.Duty</RootNamespace>
+      <LangVersion>latest</LangVersion>
+      <Nullable>enable</Nullable>
+      <ImplicitUsings>disable</ImplicitUsings>
+      <IncludeSource>true</IncludeSource>
+      <IncludeSymbols>true</IncludeSymbols>
+      <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+      <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+      <NoWarn>1701,1702</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+</Project>
