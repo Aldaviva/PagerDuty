@@ -23,7 +23,10 @@ public class TriggerAlert: Alert {
     /// </summary>
     public string? DedupKey { get; set; }
 
-    private string Summary { get; }
+    /// <summary>
+    /// A brief text summary of the event, used to generate the summaries/titles of any associated alerts. The maximum permitted length of this property is 1024 characters.
+    /// </summary>
+    [JsonIgnore] public string Summary { get; set; }
 
     /// <summary>
     /// <para>The unique name of the location where the Change Event occurred.</para>
@@ -31,7 +34,10 @@ public class TriggerAlert: Alert {
     /// </summary>
     [JsonIgnore] public string? Source { get; set; } = Environment.MachineName;
 
-    private Severity Severity { get; }
+    /// <summary>
+    /// The perceived severity of the status the event is describing with respect to the affected system.
+    /// </summary>
+    [JsonIgnore] public Severity Severity { get; }
 
     /// <summary>
     /// <para>The time at which the emitting tool detected or generated the event.</para>

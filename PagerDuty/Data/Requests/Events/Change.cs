@@ -20,7 +20,10 @@ public class Change: PagerDutyEvent {
     private static readonly Uri ChangeUri = new("https://events.pagerduty.com/v2/change/enqueue");
     internal override Uri ApiUri => ChangeUri;
 
-    private string Summary { get; }
+    /// <summary>
+    /// A brief text summary of the event, used to generate the summaries/titles of any associated alerts.
+    /// </summary>
+    [JsonIgnore] public string Summary { get; set; }
 
     /// <summary>
     /// <para>The unique name of the location where the Change Event occurred.</para>

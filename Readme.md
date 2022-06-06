@@ -12,7 +12,8 @@ PagerDuty
     1. [Triggering an Alert](#triggering-an-alert)
     1. [Acknowledging an Alert](#acknowledging-an-alert)
     1. [Resolving an Alert](#resolving-an-alert)
-    1. [Creating a change](#creating-a-change)
+    1. [Creating a Change](#creating-a-change)
+    1. [Handling exceptions](#handling-exceptions)
     1. [Cleaning up](#cleaning-up)
 1. [References](#references)
 
@@ -60,13 +61,13 @@ You can install this library into your project from [NuGet Gallery](https://www.
 Construct a new **`TriggerAlert`** instance with the required parameters, and pass it to the `IPagerDuty.Send(Alert)` method. This returns an `AlertResponse`.
 
 ```cs
-AlertResponse alert = await pagerDuty.Send(new TriggerAlert(Severity.Error, "Summary of Alert"));
+AlertResponse alertResponse = await pagerDuty.Send(new TriggerAlert(Severity.Error, "Summary"));
 ```
 
 You can specify optional parameters with an object initializer or assignments.
 
 ```cs
-var trigger = new TriggerAlert(Severity.Warning, "My summary") {
+var trigger = new TriggerAlert(Severity.Warning, "Summary of warning") {
     Class = "my class",
     Component = "my component",
     Group = "my group",
@@ -96,7 +97,7 @@ trigger.CustomDetails = new Dictionary<string, object> {
 This is the same as triggering an Alert, except you construct an `AcknowledgeAlert` and set its `DedupKey` to the value in the `AlertResponse` from the prior `TriggerAlert`, which identifies the specific Alert to acknowledge.
 
 ```cs
-await pagerDuty.Send(new AcknowledgeAlert(alert.DedupKey));
+await pagerDuty.Send(new AcknowledgeAlert(alertResponse.DedupKey));
 ```
 
 <a id="resolving-an-alert"></a>
@@ -105,16 +106,33 @@ await pagerDuty.Send(new AcknowledgeAlert(alert.DedupKey));
 This is the same as acknowledging an Alert, but with `ResolveAlert`.
 
 ```cs
-await pagerDuty.Send(new ResolveAlert(alert.DedupKey));
+await pagerDuty.Send(new ResolveAlert(alertResponse.DedupKey));
 ```
 
 <a id="creating-a-change"></a>
-### Creating a change
+### Creating a Change
 
-You can also create Changes in additon to Alerts.
+You can also create Changes in addition to Alerts.
 
 ```cs
 await pagerDuty.Send(new Change("Summary of Change"));
+```
+
+<a id="handling-exceptions"></a>
+### Handling exceptions
+
+All of the exceptions thrown by `IPagerDuty.Send` inherit from `PagerDutyAlert`, so you can catch that superclass, or the more specialized subclasses: `NetworkException`, `BadRequest`, `RateLimited`, and `InternalServerError`.
+
+```cs
+try {
+    await pagerDuty.Send(new Change("Summary of Change"));
+} catch (PagerDutyException e) when (e.RetryAllowedAfterDelay) {
+    // try again later
+} catch (BadRequest e) {
+    Console.WriteLine($"{e.Message} {e.StatusCode} {e.Response}");
+} catch (WebApplicationException) {
+    // catch-all for unexpected status codes
+}
 ```
 
 <a id="cleaning-up"></a>
