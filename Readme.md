@@ -3,7 +3,7 @@ PagerDuty
 
 *Client that sends Alert and Change events to the [PagerDuty](https://www.pagerduty.com/home/) [Events API V2](https://developer.pagerduty.com/docs/events-api-v2/overview/)*
 
-[![Nuget](https://img.shields.io/nuget/v/PagerDuty)](https://www.nuget.org/packages/PagerDuty/) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Aldaviva/PagerDuty/.NET?logo=github)](https://github.com/Aldaviva/PagerDuty/actions/workflows/dotnetpackage.yml) [![Coverage Status](https://coveralls.io/repos/github/Aldaviva/PagerDuty/badge.svg?branch=master)](https://coveralls.io/github/Aldaviva/PagerDuty?branch=master)
+[![Nuget](https://img.shields.io/nuget/v/PagerDuty?logo=nuget)](https://www.nuget.org/packages/PagerDuty/) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Aldaviva/PagerDuty/.NET?logo=github)](https://github.com/Aldaviva/PagerDuty/actions/workflows/dotnetpackage.yml) [![Coveralls](https://img.shields.io/coveralls/github/Aldaviva/PagerDuty?logo=coveralls)](https://coveralls.io/github/Aldaviva/PagerDuty?branch=master)
 
 <!-- MarkdownTOC autolink="true" bracket="round" autoanchor="true" levels="1,2,3" style="ordered" -->
 
