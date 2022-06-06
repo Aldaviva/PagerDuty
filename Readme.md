@@ -3,6 +3,8 @@ PagerDuty
 
 *Client that sends Alert and Change events to the [PagerDuty](https://www.pagerduty.com/home/) [Events API V2](https://developer.pagerduty.com/docs/events-api-v2/overview/)*
 
+![Nuget](https://img.shields.io/nuget/v/PagerDuty) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Aldaviva/PagerDuty/.NET?logo=github) [![Coverage Status](https://coveralls.io/repos/github/Aldaviva/PagerDuty/badge.svg?branch=master)](https://coveralls.io/github/Aldaviva/PagerDuty?branch=master)
+
 <!-- MarkdownTOC autolink="true" bracket="round" autoanchor="true" levels="1,2,3" style="ordered" -->
 
 1. [Prerequisites](#prerequisites)
