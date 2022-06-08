@@ -11,7 +11,8 @@ public class Serialization {
     private readonly JsonSerializer         _jsonSerializer;
 
     public Serialization() {
-        _jsonSerializer = JsonSerializer.Create(_jsonSettings);
+        _jsonSettings.Formatting = Formatting.Indented;
+        _jsonSerializer          = JsonSerializer.Create(_jsonSettings);
     }
 
     [Fact]
@@ -51,7 +52,9 @@ public class Serialization {
             Group     = "prod-datapipe",
             Links     = { new Link("https://example.com/", "Link text") },
             Source    = "monitoringtool:cloudvendor:central-region-dc-01:852559987:cluster/api-stats-prod-003",
-            DedupKey  = "samplekeyhere"
+            DedupKey  = "samplekeyhere",
+            Client    = "Sample Monitoring Service",
+            ClientUrl = "https://monitoring.service.com"
         };
 
         const string expected = @"{
@@ -84,8 +87,8 @@ public class Serialization {
     }
   ],
   ""event_action"": ""trigger"",
-  ""client"": ""Aldaviva/PagerDuty"",
-  ""client_url"": ""https://github.com/Aldaviva/PagerDuty""
+  ""client"": ""Sample Monitoring Service"",
+  ""client_url"": ""https://monitoring.service.com""
 }";
 
         AssertEquivalentJson(@event, expected);
@@ -141,11 +144,22 @@ public class Serialization {
         AssertEquivalentJson(@event, expected);
     }
 
+    /**
+     * PagerDuty throws 400 Bad Request if the request body starts with a BOM.
+     */
+    [Fact]
+    public async Task NoByteOrderMarker() {
+        JsonContent jsonContent = new(JToken.Parse(@"1")) { JsonSerializer = _jsonSerializer };
+        byte[]      actual      = await jsonContent.ReadAsByteArrayAsync();
+
+        actual.Should().BeEquivalentTo(new byte[] { 0x31 });
+    }
+
     private void AssertEquivalentJson(object actual, string expected) {
         JObject actualJson   = JObject.FromObject(actual, _jsonSerializer);
         JToken  expectedJson = JToken.Parse(expected);
         JToken.DeepEquals(actualJson, expectedJson)
-            .Should().BeTrue("actual {0} should be equivalent to expected {1}", actualJson, expectedJson);
+            .Should().BeTrue("actual {0} should be equivalent to expected {1}", JsonConvert.SerializeObject(actual, _jsonSettings), expectedJson);
     }
 
 }

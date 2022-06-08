@@ -82,7 +82,7 @@ public class PagerDuty: IPagerDuty {
 
         Uri uri = pagerDutyEvent.ApiUri;
 
-        HttpContent requestBody = new JsonContent(pagerDutyEvent) { JsonSerializer = _jsonSerializer, Encoding = Encoding.UTF8 };
+        HttpContent requestBody = new JsonContent(pagerDutyEvent) { JsonSerializer = _jsonSerializer, Encoding = new UTF8Encoding(false) };
 
         HttpResponseMessage response;
         try {
