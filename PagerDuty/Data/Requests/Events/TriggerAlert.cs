@@ -26,13 +26,13 @@ public class TriggerAlert: Alert {
     /// <summary>
     /// A brief text summary of the event, used to generate the summaries/titles of any associated alerts. The maximum permitted length of this property is 1024 characters.
     /// </summary>
-    [JsonIgnore] public string Summary { get; set; }
+    [JsonIgnore] public string Summary { get; }
 
     /// <summary>
     /// <para>The unique name of the location where the Change Event occurred.</para>
-    /// <para>Optional. When omitted, this is set to your computer's NETBIOS name.</para>
+    /// <para>Required, defaults to your computer's NETBIOS name.</para>
     /// </summary>
-    [JsonIgnore] public string? Source { get; set; } = Environment.MachineName;
+    [JsonIgnore] public string Source { get; set; } = Environment.MachineName;
 
     /// <summary>
     /// The perceived severity of the status the event is describing with respect to the affected system.
@@ -82,8 +82,22 @@ public class TriggerAlert: Alert {
     /// </summary>
     public ICollection<Image> Images { get; } = new List<Image>();
 
-    [JsonProperty] internal string Client => "Aldaviva/PagerDuty";
-    [JsonProperty] internal string ClientUrl => "https://github.com/Aldaviva/PagerDuty";
+    /// <summary>
+    /// <para>The name of the monitoring client that is triggering this event.</para>
+    /// <para>This will have the prefix "View in " and appear as a hyperlink to <see cref="ClientUrl"/> under the Client heading of the Alert's Details in the PagerDuty web application.</para>
+    /// <para><see cref="Client"/> and <see cref="ClientUrl"/> should both be specified or omitted together.</para>
+    /// <para>Optional. If you don't specify <see cref="Client"/>, the Alert details will not contain a Client heading or link at all, regardless of whether or not you specify <see cref="ClientUrl"/>. If you specify <see cref="Client"/> but not <see cref="ClientUrl"/>, the link will appear but clicking on it will have no effect.</para>
+    /// </summary>
+    public string? Client { get; set; }
+
+    /// <summary>
+    /// <para>The name of the monitoring client that is triggering this event.</para>
+    /// <para>This will as the hyperlink destination "View in <c>Client</c>" link found under the Client heading of the Alert's details in the PagerDuty web application.</para>
+    /// <para><see cref="Client"/> and <see cref="ClientUrl"/> should both be specified or omitted together.</para>
+    /// <para>Optional. If you specify neither <see cref="Client"/> nor <see cref="ClientUrl"/>, the Alert details will not contain a Client heading or link at all. If you specify <see cref="Client"/> but not <see cref="ClientUrl"/>, the link will appear but clicking on it will have no effect.</para>
+    /// </summary>
+    public string? ClientUrl { get; set; }
+
     [JsonProperty] internal object Payload => new { Summary, Source, Severity, Timestamp, Component, Group, Class, CustomDetails };
 
     /// <summary>
