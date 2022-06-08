@@ -8,9 +8,20 @@ namespace Pager.Duty;
 /// </summary>
 public class Image {
 
-    [JsonProperty("src")] internal string Source { get; }
-    [JsonProperty] internal string? Href { get; }
-    [JsonProperty("alt")] internal string? AltText { get; }
+    /// <summary>
+    /// The source of the image being attached to the incident or alert. This image must be served via HTTPS.
+    /// </summary>
+    [JsonProperty("src")] public string Source { get; }
+
+    /// <summary>
+    /// Optional link for the image.
+    /// </summary>
+    public string? Href { get; }
+
+    /// <summary>
+    /// Optional alternative text for the image.
+    /// </summary>
+    [JsonProperty("alt")] public string? AltText { get; }
 
     /// <summary>
     /// Image to be displayed on the alert and/or corresponding incident.

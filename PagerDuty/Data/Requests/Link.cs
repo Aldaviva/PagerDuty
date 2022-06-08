@@ -1,5 +1,4 @@
 ﻿using System;
-using Newtonsoft.Json;
 
 namespace Pager.Duty;
 
@@ -11,8 +10,15 @@ public class Link {
     /*
      * Using string instead of Uri because Json.NET unfortunately erroneously fails the DeepEquals check between a JValue<Uri> and a JValue<string> with the same content, and JToken.Parse doesn't create JToken<Uri> automatically.
      */
-    [JsonProperty] internal string Href { get; }
-    [JsonProperty] internal string? Text { get; }
+    /// <summary>
+    /// The link being attached to an incident or alert.
+    /// </summary>
+    public string Href { get; }
+
+    /// <summary>
+    /// Optional information pertaining to this context link.
+    /// </summary>
+    public string? Text { get; }
 
     /// <summary>
     /// Link to be shown on the alert and/or corresponding incident.
