@@ -121,7 +121,7 @@ await pagerDuty.Send(new Change("Summary of Change"));
 
 ### Handling exceptions
 
-All of the exceptions thrown by `IPagerDuty.Send` inherit from `PagerDutyAlert`, so you can catch that superclass, or the more specialized subclasses: `NetworkException`, `BadRequest`, `RateLimited`, and `InternalServerError`.
+All of the exceptions thrown by `IPagerDuty.Send` inherit from `PagerDutyException`, so you can catch that superclass, or the more specialized subclasses: `NetworkException`, `BadRequest`, `RateLimited`, and `InternalServerError`.
 
 ```cs
 try {
