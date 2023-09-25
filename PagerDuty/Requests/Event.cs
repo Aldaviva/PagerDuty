@@ -1,13 +1,12 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace Pager.Duty;
+namespace Pager.Duty.Requests;
 
 /// <summary>
 /// <para>The Events API v2 can ingest multiple types of events.</para>
 /// <para>Concrete implementations are <see cref="TriggerAlert"/>, <see cref="AcknowledgeAlert"/>, <see cref="ResolveAlert"/>, and <see cref="Change"/>.</para>
 /// </summary>
-public abstract class PagerDutyEvent {
+public abstract class Event {
 
     [JsonProperty] internal string? RoutingKey { get; set; }
 

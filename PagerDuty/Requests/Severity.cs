@@ -1,4 +1,4 @@
-﻿namespace Pager.Duty;
+﻿namespace Pager.Duty.Requests;
 
 /// <summary>
 /// The perceived severity of the status the event is describing with respect to the affected system.

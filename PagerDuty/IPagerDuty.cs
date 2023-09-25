@@ -1,16 +1,13 @@
-﻿using System;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+﻿// ReSharper disable UnusedMemberInSuper.Global - meant to be used by library consumers
 
-// ReSharper disable UnusedMemberInSuper.Global - meant to be used by library consumers
-
-[assembly: InternalsVisibleTo("Tests")]
+using Pager.Duty.Exceptions;
+using Pager.Duty.Requests;
+using Pager.Duty.Responses;
 
 namespace Pager.Duty;
 
 /// <summary>
-/// <para>This interface is the main entry point into the PagerDuty library. The implementation is <see cref="PagerDuty"/></para>
+/// <para>The entry point into the PagerDuty library is <see cref="PagerDuty"/>, which implements the <see cref="IPagerDuty"/> interface.</para>
 /// <para> </para>
 /// <para>To get started:</para>
 /// <list type="number">
@@ -19,7 +16,7 @@ namespace Pager.Duty;
 /// <item><description>Add a new Integration of type "Events API V2" to your Service.</description></item>
 /// <item><description>Copy the automatically-generated Integration Key.</description></item>
 /// <item><description>Construct a new <see cref="PagerDuty"/> instance, passing it the Integration Key.</description></item>
-/// <item><description>Call the <see cref="Send(Alert)"/> method, passing a new <see cref="PagerDutyEvent"/> parameter.</description></item>
+/// <item><description>Call the <see cref="Send(Alert)"/> method, passing a new <see cref="Event"/> parameter.</description></item>
 /// <item><description>To get the result of the request, you can await the <see cref="Task"/> and catch <see cref="PagerDutyException"/>.</description></item>
 /// </list>
 /// <para> </para>
@@ -40,9 +37,9 @@ namespace Pager.Duty;
 public interface IPagerDuty: IDisposable {
 
     /// <summary>
-    /// <para>Optional <see cref="HttpClient"/> to use for sending API requests to PagerDuty.</para>
+    /// <para>Optional <see cref="System.Net.Http.HttpClient"/> to use for sending API requests to PagerDuty. Useful to set if you need custom settings for a proxy or TLS, for example.</para>
     /// <para>If you don't set this property, a default instance will automatically be created and used instead.</para>
-    /// <para>Useful to set if you need custom settings for a proxy or TLS, for example.</para>
+    /// <para>The default instance will be automatically disposed of when you call <see cref="IDisposable.Dispose"/>, but custom instances you set here will not, so that you can reuse them.</para>
     /// </summary>
     HttpClient HttpClient { get; set; }
 

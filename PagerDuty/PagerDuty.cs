@@ -1,46 +1,19 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using Pager.Duty.Exceptions;
+using Pager.Duty.Requests;
+using Pager.Duty.Responses;
 
 namespace Pager.Duty;
 
-/// <summary>
-/// <para>This class is the main entry point into the PagerDuty library.</para>
-/// <para> </para>
-/// <para>To get started:</para>
-/// <list type="number">
-/// <item><description>Sign in to PagerDuty, or create a new free account.</description></item>
-/// <item><description>Create a new Service in PagerDuty.</description></item>
-/// <item><description>Add a new Integration of type "Events API V2" to your Service.</description></item>
-/// <item><description>Copy the automatically-generated Integration Key.</description></item>
-/// <item><description>Construct a new <see cref="PagerDuty"/> instance, passing it the Integration Key.</description></item>
-/// <item><description>Call the <see cref="Send(Alert)"/> method, passing a new <see cref="PagerDutyEvent"/> parameter.</description></item>
-/// <item><description>To get the result of the request, you can await the <see cref="Task"/> and catch <see cref="PagerDutyException"/>.</description></item>
-/// </list>
-/// <para> </para>
-/// <para>Example:</para>
-/// <code> using IPagerDuty pagerDuty = new PagerDuty("dfca74ebb7450b3e6da3ba6083a323f4");
-/// try {
-///     AlertResponse response = await pagerDuty.Send(new TriggerAlert(Severity.Error, "Health check failing") {
-///         Component = "db-prod-00",
-///         Group = "db-prod"
-///     });
-///
-///     await Task.Delay(1000);
-///     await pagerDuty.Send(new ResolveAlert(response.DedupKey));
-/// } catch (PagerDutyException e) {
-///     Console.WriteLine(e.Message);
-/// }</code>
-/// </summary>
+/// <inheritdoc />
 public class PagerDuty: IPagerDuty {
 
     private static readonly NamingStrategy JsonNamingStrategy = new SnakeCaseNamingStrategy(false, false);
+    private static readonly Encoding       Utf8               = new UTF8Encoding(false, true);
 
     internal static readonly JsonSerializerSettings JsonSerializerSettings = new() {
         NullValueHandling = NullValueHandling.Ignore,
@@ -48,8 +21,21 @@ public class PagerDuty: IPagerDuty {
         Converters        = { new StringEnumConverter(JsonNamingStrategy, false) }
     };
 
+    private HttpClient _httpClient     = new();
+    private bool       _ownsHttpClient = true;
+
     /// <inheritdoc />
-    public HttpClient HttpClient { get; set; } = new();
+    public HttpClient HttpClient {
+        get => _httpClient;
+        set {
+            if (_ownsHttpClient && _httpClient != value) {
+                _ownsHttpClient = false;
+                _httpClient.Dispose();
+            }
+
+            _httpClient = value;
+        }
+    }
 
     private readonly JsonSerializer _jsonSerializer;
     private readonly string         _routingKey;
@@ -77,24 +63,24 @@ public class PagerDuty: IPagerDuty {
 
     /// <exception cref="NetworkException"></exception>
     /// <exception cref="WebApplicationException"></exception>
-    private async Task<TResponse> Send<TResponse>(PagerDutyEvent pagerDutyEvent) {
+    private async Task<TResponse> Send<TResponse>(Event pagerDutyEvent) {
         pagerDutyEvent.RoutingKey = _routingKey;
 
         Uri uri = pagerDutyEvent.ApiUri;
 
-        HttpContent requestBody = new JsonContent(pagerDutyEvent) { JsonSerializer = _jsonSerializer, Encoding = new UTF8Encoding(false) };
+        HttpContent requestBody = new JsonContent(pagerDutyEvent) { JsonSerializer = _jsonSerializer, Encoding = Utf8 };
 
         HttpResponseMessage response;
         try {
             response = await HttpClient.PostAsync(uri, requestBody).ConfigureAwait(false);
         } catch (HttpRequestException e) {
-            throw new NetworkException($"Failed to send {typeof(PagerDutyEvent)} to {uri}: {e.Message}", e);
+            throw new NetworkException($"Failed to send {typeof(Event)} to {uri}: {e.Message}", e);
         }
 
         int statusCode = (int) response.StatusCode;
         if (statusCode != (int) HttpStatusCode.Accepted) {
             string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            string message      = $"Failed to send {typeof(PagerDutyEvent)} to {uri}";
+            string message      = $"Failed to send {typeof(Event)} to {uri}";
             throw statusCode switch {
                 (int) HttpStatusCode.BadRequest                       => new BadRequest(message) { Response                          = responseBody },
                 429                                                   => new RateLimited(message) { Response                         = responseBody },
@@ -104,7 +90,7 @@ public class PagerDuty: IPagerDuty {
         }
 
         using Stream     responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        using TextReader textReader     = new StreamReader(responseStream, Encoding.UTF8);
+        using TextReader textReader     = new StreamReader(responseStream, Utf8);
         using JsonReader jsonReader     = new JsonTextReader(textReader);
         return _jsonSerializer.Deserialize<TResponse>(jsonReader)!;
     }
@@ -113,7 +99,9 @@ public class PagerDuty: IPagerDuty {
     /// Clean up this instance to ensure memory can be freed by the garbage collector. It will not be able to send requests after calling this method.
     /// </summary>
     public void Dispose() {
-        HttpClient.Dispose();
+        if (_ownsHttpClient) {
+            HttpClient.Dispose();
+        }
     }
 
 }

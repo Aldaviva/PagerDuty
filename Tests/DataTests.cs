@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Pager.Duty;
+﻿using Pager.Duty.Requests;
 
 namespace Tests;
 

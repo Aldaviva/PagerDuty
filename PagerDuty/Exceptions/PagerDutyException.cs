@@ -1,8 +1,6 @@
-﻿using System;
+﻿// ReSharper disable UnusedAutoPropertyAccessor.Global - read by library consumers
 
-// ReSharper disable UnusedAutoPropertyAccessor.Global - read by library consumers
-
-namespace Pager.Duty;
+namespace Pager.Duty.Exceptions;
 
 /// <summary>
 /// The top-level exception class for the PagerDuty library.

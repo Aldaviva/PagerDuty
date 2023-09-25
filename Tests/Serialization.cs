@@ -1,7 +1,7 @@
-using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Pager.Duty;
+using Pager.Duty.Requests;
 
 namespace Tests;
 

@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Pager.Duty.Responses;
 
 // ReSharper disable ReturnTypeCanBeEnumerable.Global - would prevent consumers from initializing the collection
 // ReSharper disable CollectionNeverQueried.Global - queried by Json.NET during serialization
 // ReSharper disable UnusedAutoPropertyAccessor.Global - queried by Json.NET during serialization
 
-namespace Pager.Duty;
+namespace Pager.Duty.Requests;
 
 /// <summary>
 /// <para>A new alert is opened or a trigger log entry is created on an existing alert if one already exists with the same <see cref="AlertResponse.DedupKey"/>.</para>

@@ -1,5 +1,4 @@
-﻿using FakeItEasy;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Tests.Helpers;
@@ -15,10 +14,6 @@ public static class TestExtensions {
             writer.Write(expectedJsonBody);
         });
     }
-
-    // public static T Matches<T>(this IArgumentConstraintManager<T> manager, Func<T, bool> predicate) {
-    //     return manager.Matches(predicate, "custom matcher");
-    // }
 
     public static Func<HttpRequestMessage, bool> IsMatch(HttpMethod expectedMethod, string expectedUri, string expectedJsonBody) {
         return actual => actual.Method == expectedMethod &&

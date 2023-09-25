@@ -1,10 +1,12 @@
 ﻿using Pager.Duty;
+using Pager.Duty.Exceptions;
+using Pager.Duty.Requests;
 
 using IPagerDuty pagerDuty = new PagerDuty(integrationKey: "77b876d00b6c4e0dc0fadc3062f8c1a6");
 
 try {
 
-    await pagerDuty.Send(new TriggerAlert(Severity.Info, "Neither client nor url"));
+    await pagerDuty.Send(new TriggerAlert(Severity.Info, "Something happened"));
 
     Console.WriteLine("Done");
 

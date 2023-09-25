@@ -1,6 +1,4 @@
-﻿using FakeItEasy;
-
-namespace Tests.Helpers;
+﻿namespace Tests.Helpers;
 
 internal class HttpRequestMessageFormatter: ArgumentValueFormatter<HttpRequestMessage> {
 

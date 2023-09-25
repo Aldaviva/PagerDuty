@@ -1,14 +1,15 @@
 ﻿using System.Net;
-using FakeItEasy;
-using FluentAssertions;
 using Pager.Duty;
+using Pager.Duty.Exceptions;
+using Pager.Duty.Requests;
+using Pager.Duty.Responses;
 using Tests.Helpers;
 
 namespace Tests;
 
 public class PagerDutyTest {
 
-    private readonly PagerDuty              _pagerDuty          = new("123");
+    private          PagerDuty              _pagerDuty          = new("123");
     private readonly FakeHttpMessageHandler _httpMessageHandler = A.Fake<FakeHttpMessageHandler>();
 
     public PagerDutyTest() {
@@ -142,11 +143,19 @@ public class PagerDutyTest {
     }
 
     [Fact]
-    public void Dispose() {
+    public void DisposeOwnedHttpClient() {
+        _pagerDuty = new PagerDuty("test using owned HttpClient");
         _pagerDuty.Dispose();
 
         Action thrower = () => _pagerDuty.HttpClient.Timeout = TimeSpan.FromSeconds(1);
         thrower.Should().Throw<ObjectDisposedException>();
+    }
+
+    [Fact]
+    public void DontDisposeNonOwnedHttpClient() {
+        _pagerDuty.Dispose();
+
+        _pagerDuty.HttpClient.Timeout = TimeSpan.FromSeconds(1);
     }
 
 }

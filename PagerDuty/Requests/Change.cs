@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 // ReSharper disable ReturnTypeCanBeEnumerable.Global - would prevent consumers from initializing the collection
 // ReSharper disable CollectionNeverQueried.Global - queried by Json.NET during serialization
 
-namespace Pager.Duty;
+namespace Pager.Duty.Requests;
 
 /// <summary>
 /// <para>A change in a system that does not represent a problem.</para>
@@ -14,7 +12,7 @@ namespace Pager.Duty;
 /// <para>PagerDuty will only keep the last 90 days of Change Events, as per our data retention guidelines.</para>
 /// <para>Examples: High error rate, CPU usage exceeded limit, Deployment failed</para>
 /// </summary>
-public class Change: PagerDutyEvent {
+public class Change: Event {
 
     // ExceptionAdjustment: M:System.Uri.#ctor(System.String) -T:System.UriFormatException
     private static readonly Uri ChangeUri = new("https://events.pagerduty.com/v2/change/enqueue");

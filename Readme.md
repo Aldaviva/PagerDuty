@@ -1,9 +1,26 @@
 <img src="https://raw.githubusercontent.com/Aldaviva/PagerDuty/master/PagerDuty/icon.png" height="23" alt="PagerDuty logo" /> PagerDuty
 ===
 
-[![Nuget](https://img.shields.io/nuget/v/PagerDuty?logo=nuget)](https://www.nuget.org/packages/PagerDuty/) [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Aldaviva/PagerDuty/dotnetpackage.yml?branch=master&logo=github)](https://github.com/Aldaviva/PagerDuty/actions/workflows/dotnetpackage.yml) [![Coveralls](https://img.shields.io/coveralls/github/Aldaviva/PagerDuty?logo=coveralls)](https://coveralls.io/github/Aldaviva/PagerDuty?branch=master)
+[![Nuget](https://img.shields.io/nuget/v/PagerDuty?logo=nuget&color=success)](https://www.nuget.org/packages/PagerDuty/) [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Aldaviva/PagerDuty/dotnetpackage.yml?branch=master&logo=github)](https://github.com/Aldaviva/PagerDuty/actions/workflows/dotnetpackage.yml) [![Coveralls](https://img.shields.io/coveralls/github/Aldaviva/PagerDuty?logo=coveralls)](https://coveralls.io/github/Aldaviva/PagerDuty?branch=master)
 
 *Trigger, acknowledge, and resolve [Alerts](https://support.pagerduty.com/docs/alerts) and create [Changes](https://support.pagerduty.com/docs/change-events) using the [PagerDuty Events API V2](https://developer.pagerduty.com/docs/events-api-v2/overview/).*
+
+<!-- MarkdownTOC autolink="true" bracket="round" levels="1,2,3" bullets="1.,-" -->
+
+1. [Prerequisites](#prerequisites)
+1. [Installation](#installation)
+1. [Configuration](#configuration)
+    - [HTTP settings](#http-settings)
+1. [Usage](#usage)
+    - [Triggering an Alert](#triggering-an-alert)
+    - [Acknowledging an Alert](#acknowledging-an-alert)
+    - [Resolving an Alert](#resolving-an-alert)
+    - [Creating a Change](#creating-a-change)
+    - [Handling exceptions](#handling-exceptions)
+    - [Cleaning up](#cleaning-up)
+1. [References](#references)
+
+<!-- /MarkdownTOC -->
 
 ## Prerequisites
 
@@ -29,15 +46,19 @@ You can install this library into your project from [NuGet Gallery](https://www.
     1. In the **Integrations** tab of the Service, add a new **Integration**.
     1. Under **Most popular integrations**, select **Events API V2**, then click **Add**.
     1. Expand the newly-created Integration and copy its **Integration Key**, which will be used to authorize this library to send Events to the correct Service.
-1. Construct a new **`PagerDuty`** API client instance in your project, passing your **Integration Key** as a constructor parameter.
+1. Construct a new **`PagerDuty`** client instance in your project, passing your **Integration Key** as a constructor parameter.
     ```cs
+    using Pager.Duty;
+
     IPagerDuty pagerDuty = new PagerDuty(integrationKey: "dfca74ebb7450b3e6da3ba6083a323f4");
     ```
 
-`IPagerDuty` instances can be reused to send multiple events over the lifetime of your application. You can add one to your dependency injection context and retain it for as long as you like.
+`PagerDuty` instances can be reused to send multiple events to the same service over the lifetime of your application. You can add one to your dependency injection context and retain it for as long as you like. If you need to send events to multiple services, construct multiple `PagerDuty` instance objects.
 
 ### HTTP settings
-If you need to customize any of the settings for the HTTP connection to PagerDuty's API servers, you may optionally provide a custom [`HttpClient`](https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpclient) instance to the `IPagerDuty` object. This allows you to set a proxy server, TLS settings, concurrent connection count, [DNS TTL](https://docs.microsoft.com/en-us/dotnet/fundamentals/networking/httpclient-guidelines#dns-behavior), and other properties. If you don't set this property, a default `HttpClient` instance is used instead.
+If you need to customize any of the settings for the HTTP connection to PagerDuty's API servers, you may optionally provide a custom [`HttpClient`](https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpclient) instance to the `IPagerDuty` object. This allows you to set a proxy server, TLS settings, concurrent connection count, [DNS TTL](https://docs.microsoft.com/en-us/dotnet/fundamentals/networking/httpclient-guidelines#dns-behavior), and other properties.
+
+If you don't set this property, a default `HttpClient` instance is used instead, and will be automatically disposed of when the `PagerDuty` instance is disposed of. If you do set this property to a custom `HttpClient` instance, `PagerDuty` won't dispose of it, so that you can reuse it in multiple places.
 
 ```cs
 pagerDuty.HttpClient = new HttpClient(new SocketsHttpHandler {
@@ -56,6 +77,8 @@ pagerDuty.HttpClient = new HttpClient(new SocketsHttpHandler {
 ## Usage
 
 ### Triggering an Alert
+
+This creates a new, unresolved alert for your PagerDuty service, showing that a new event has just occurred.
 
 Construct a new **`TriggerAlert`** instance with the required `severity` and `summary` parameters, and pass it to the `IPagerDuty.Send(Alert)` method. This returns an `AlertResponse` once it's been successfully uploaded to PagerDuty.
 
@@ -97,6 +120,8 @@ trigger.CustomDetails = new Dictionary<string, object> {
 
 ### Acknowledging an Alert
 
+This moves an existing unresolved alert for your service into the acknowledged state, showing that someone is aware of it.
+
 The value of the required `DedupKey` constructor parameter comes from an `AlertResponse`, which is returned when you send a `TriggerAlert`.
 
 ```cs
@@ -104,6 +129,8 @@ await pagerDuty.Send(new AcknowledgeAlert(alertResponse.DedupKey));
 ```
 
 ### Resolving an Alert
+
+This marks an existing alert for your service as resolved, showing that the original conditions that triggered the alert are no longer present.
 
 The value of the required `DedupKey` constructor parameter comes from an `AlertResponse`, which is returned when you send a `TriggerAlert`.
 
@@ -113,7 +140,7 @@ await pagerDuty.Send(new ResolveAlert(alertResponse.DedupKey));
 
 ### Creating a Change
 
-You can also create Changes.
+This is not an alert, it's a different type of event showing that something expected changed in your service, which may be useful to know about if an alert occurs later.
 
 ```cs
 await pagerDuty.Send(new Change("Summary of Change"));
@@ -137,7 +164,7 @@ try {
 
 ### Cleaning up
 
-`PagerDuty` contains an `HttpClient` instance, so when you're done with the instance, call `Dispose()` to clean it up and allow the `HttpClient` to be garbage collected.
+`PagerDuty` contains an `HttpClient` instance, so when you're done with the instance, call `Dispose()` to clean it up and allow the default `HttpClient` to be garbage collected. A custom `HttpClient` instance, if set, won't be disposed, so that you can reuse it in multiple places.
 
 ```cs
 pagerDuty.Dispose();

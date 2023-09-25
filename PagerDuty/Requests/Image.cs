@@ -1,7 +1,6 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace Pager.Duty;
+namespace Pager.Duty.Requests;
 
 /// <summary>
 /// Image to be displayed on the alert and/or corresponding incident.

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Pager.Duty;
+namespace Pager.Duty.Responses;
 
 /// <summary>
 /// An alert has been created or updated.

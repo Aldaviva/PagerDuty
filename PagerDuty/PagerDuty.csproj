@@ -5,6 +5,7 @@
         <RootNamespace>Pager.Duty</RootNamespace>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
+        <ImplicitUsings>true</ImplicitUsings>
         <IncludeSource>true</IncludeSource>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -12,28 +13,41 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>1701,1702</NoWarn>
 
-        <Version>0.0.2-SNAPSHOT1</Version>
+        <Version>1.0.0</Version>
         <Title>PagerDuty</Title>
         <PackageId>PagerDuty</PackageId>
         <Product>PagerDuty</Product>
         <Description>Trigger, acknowledge, and resolve Alerts and create Changes using the PagerDuty Events API V2.</Description>
         <Authors>Ben Hutchison</Authors>
         <Company>Ben Hutchison</Company>
-        <Copyright>© 2022 Ben Hutchison</Copyright>
+        <Copyright>© 2023 Ben Hutchison</Copyright>
         <RepositoryUrl>https://github.com/Aldaviva/PagerDuty.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>pagerduty</PackageTags>
         <PackageProjectUrl>https://github.com/Aldaviva/PagerDuty</PackageProjectUrl>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageIcon>icon.png</PackageIcon>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PackageReadmeFile>Readme.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
         <None Update="icon.png" Pack="true" PackagePath="\" />
+        <None Include="..\Readme.md" Pack="true" PackagePath="\" />
     </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Tests" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(Configuration)' == 'Release'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
 
 </Project>
