@@ -1,11 +1,15 @@
-﻿using System.Net;
-using System.Text;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Pager.Duty.Exceptions;
 using Pager.Duty.Requests;
 using Pager.Duty.Responses;
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Pager.Duty;
 
@@ -68,7 +72,7 @@ public class PagerDuty: IPagerDuty {
 
         Uri uri = pagerDutyEvent.ApiUri;
 
-        HttpContent requestBody = new JsonContent(pagerDutyEvent) { JsonSerializer = _jsonSerializer, Encoding = Utf8 };
+        using HttpContent requestBody = new JsonContent(pagerDutyEvent) { JsonSerializer = _jsonSerializer, Encoding = Utf8 };
 
         HttpResponseMessage response;
         try {
@@ -77,22 +81,24 @@ public class PagerDuty: IPagerDuty {
             throw new NetworkException($"Failed to send {typeof(Event)} to {uri}: {e.Message}", e);
         }
 
-        int statusCode = (int) response.StatusCode;
-        if (statusCode != (int) HttpStatusCode.Accepted) {
-            string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            string message      = $"Failed to send {typeof(Event)} to {uri}";
-            throw statusCode switch {
-                (int) HttpStatusCode.BadRequest                       => new BadRequest(message) { Response                          = responseBody },
-                429                                                   => new RateLimited(message) { Response                         = responseBody },
-                >= (int) HttpStatusCode.InternalServerError and < 600 => new InternalServerError(statusCode, message) { Response     = responseBody },
-                _                                                     => new WebApplicationException(statusCode, message) { Response = responseBody }
-            };
+        using (response) {
+            int statusCode = (int) response.StatusCode;
+            if (statusCode == (int) HttpStatusCode.Accepted) {
+                using Stream     responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using TextReader textReader     = new StreamReader(responseStream, Utf8);
+                using JsonReader jsonReader     = new JsonTextReader(textReader);
+                return _jsonSerializer.Deserialize<TResponse>(jsonReader)!;
+            } else {
+                string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                string message      = $"Failed to send {typeof(Event)} to {uri}";
+                throw statusCode switch {
+                    (int) HttpStatusCode.BadRequest                       => new BadRequest(message) { Response                          = responseBody },
+                    429                                                   => new RateLimited(message) { Response                         = responseBody },
+                    >= (int) HttpStatusCode.InternalServerError and < 600 => new InternalServerError(statusCode, message) { Response     = responseBody },
+                    _                                                     => new WebApplicationException(statusCode, message) { Response = responseBody }
+                };
+            }
         }
-
-        using Stream     responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        using TextReader textReader     = new StreamReader(responseStream, Utf8);
-        using JsonReader jsonReader     = new JsonTextReader(textReader);
-        return _jsonSerializer.Deserialize<TResponse>(jsonReader)!;
     }
 
     /// <summary>

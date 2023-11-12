@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Pager.Duty.Responses;
+using System;
+using System.Collections.Generic;
 
 // ReSharper disable ReturnTypeCanBeEnumerable.Global - would prevent consumers from initializing the collection
 // ReSharper disable CollectionNeverQueried.Global - queried by Json.NET during serialization

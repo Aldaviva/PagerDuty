@@ -1,12 +1,13 @@
-<img src="https://raw.githubusercontent.com/Aldaviva/PagerDuty/master/PagerDuty/icon.png" height="23" alt="PagerDuty logo" /> PagerDuty
+📟 PagerDuty
 ===
 
-[![Nuget](https://img.shields.io/nuget/v/PagerDuty?logo=nuget&color=success)](https://www.nuget.org/packages/PagerDuty/) [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Aldaviva/PagerDuty/dotnetpackage.yml?branch=master&logo=github)](https://github.com/Aldaviva/PagerDuty/actions/workflows/dotnetpackage.yml) [![Coveralls](https://img.shields.io/coveralls/github/Aldaviva/PagerDuty?logo=coveralls)](https://coveralls.io/github/Aldaviva/PagerDuty?branch=master)
+[![Nuget](https://img.shields.io/nuget/v/PagerDuty?logo=nuget&color=blue)](https://www.nuget.org/packages/PagerDuty/) [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Aldaviva/PagerDuty/dotnetpackage.yml?branch=master&logo=github)](https://github.com/Aldaviva/PagerDuty/actions/workflows/dotnetpackage.yml) [![Testspace](https://img.shields.io/testspace/tests/Aldaviva/Aldaviva:PagerDuty/master?passed_label=passing&failed_label=failing&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4NTkgODYxIj48cGF0aCBkPSJtNTk4IDUxMy05NCA5NCAyOCAyNyA5NC05NC0yOC0yN3pNMzA2IDIyNmwtOTQgOTQgMjggMjggOTQtOTQtMjgtMjh6bS00NiAyODctMjcgMjcgOTQgOTQgMjctMjctOTQtOTR6bTI5My0yODctMjcgMjggOTQgOTQgMjctMjgtOTQtOTR6TTQzMiA4NjFjNDEuMzMgMCA3Ni44My0xNC42NyAxMDYuNS00NFM1ODMgNzUyIDU4MyA3MTBjMC00MS4zMy0xNC44My03Ni44My00NC41LTEwNi41UzQ3My4zMyA1NTkgNDMyIDU1OWMtNDIgMC03Ny42NyAxNC44My0xMDcgNDQuNXMtNDQgNjUuMTctNDQgMTA2LjVjMCA0MiAxNC42NyA3Ny42NyA0NCAxMDdzNjUgNDQgMTA3IDQ0em0wLTU1OWM0MS4zMyAwIDc2LjgzLTE0LjgzIDEwNi41LTQ0LjVTNTgzIDE5Mi4zMyA1ODMgMTUxYzAtNDItMTQuODMtNzcuNjctNDQuNS0xMDdTNDczLjMzIDAgNDMyIDBjLTQyIDAtNzcuNjcgMTQuNjctMTA3IDQ0cy00NCA2NS00NCAxMDdjMCA0MS4zMyAxNC42NyA3Ni44MyA0NCAxMDYuNVMzOTAgMzAyIDQzMiAzMDJ6bTI3NiAyODJjNDIgMCA3Ny42Ny0xNC44MyAxMDctNDQuNXM0NC02NS4xNyA0NC0xMDYuNWMwLTQyLTE0LjY3LTc3LjY3LTQ0LTEwN3MtNjUtNDQtMTA3LTQ0Yy00MS4zMyAwLTc2LjY3IDE0LjY3LTEwNiA0NHMtNDQgNjUtNDQgMTA3YzAgNDEuMzMgMTQuNjcgNzYuODMgNDQgMTA2LjVTNjY2LjY3IDU4NCA3MDggNTg0em0tNTU3IDBjNDIgMCA3Ny42Ny0xNC44MyAxMDctNDQuNXM0NC02NS4xNyA0NC0xMDYuNWMwLTQyLTE0LjY3LTc3LjY3LTQ0LTEwN3MtNjUtNDQtMTA3LTQ0Yy00MS4zMyAwLTc2LjgzIDE0LjY3LTEwNi41IDQ0UzAgMzkxIDAgNDMzYzAgNDEuMzMgMTQuODMgNzYuODMgNDQuNSAxMDYuNVMxMDkuNjcgNTg0IDE1MSA1ODR6IiBmaWxsPSIjZmZmIi8%2BPC9zdmc%2B)](https://aldaviva.testspace.com/spaces/247338) [![Coveralls](https://img.shields.io/coveralls/github/Aldaviva/PagerDuty?logo=coveralls)](https://coveralls.io/github/Aldaviva/PagerDuty?branch=master)
 
 *Trigger, acknowledge, and resolve [Alerts](https://support.pagerduty.com/docs/alerts) and create [Changes](https://support.pagerduty.com/docs/change-events) using the [PagerDuty Events API V2](https://developer.pagerduty.com/docs/events-api-v2/overview/).*
 
 <!-- MarkdownTOC autolink="true" bracket="round" levels="1,2,3" bullets="1.,-" -->
 
+1. [Quick Start](#quick-start)
 1. [Prerequisites](#prerequisites)
 1. [Installation](#installation)
 1. [Configuration](#configuration)
@@ -18,17 +19,35 @@
     - [Creating a Change](#creating-a-change)
     - [Handling exceptions](#handling-exceptions)
     - [Cleaning up](#cleaning-up)
+1. [Examples](#examples)
 1. [References](#references)
 
 <!-- /MarkdownTOC -->
 
+## Quick Start
+```cmd
+dotnet add package PagerDuty
+```
+```cs
+using Pager.Duty;
+
+using var pagerDuty = new PagerDuty("my service's integration key");
+AlertResponse alertResponse = await pagerDuty.Send(new TriggerAlert(Severity.Error, "My Alert"));
+Console.WriteLine("Triggered alert, waiting 30 seconds before resolving...");
+
+await Task.Delay(30 * 1000);
+await pagerDuty.Send(new ResolveAlert(alertResponse.DedupKey));
+Console.WriteLine("Resolved alert.");
+```
+
 ## Prerequisites
 
 - [PagerDuty account](https://www.pagerduty.com/sign-up/) (the [free plan](https://www.pagerduty.com/sign-up-free/?type=free) is sufficient)
-- Any Microsoft .NET runtime that supports [.NET Standard 2.0 or later](https://docs.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0#net-standard-versions)
+- .NET runtime
     - [.NET 5.0 or later](https://dotnet.microsoft.com/en-us/download/dotnet)
     - [.NET Core 2.0 or later](https://dotnet.microsoft.com/en-us/download/dotnet)
-    - [.NET Framework 4.6.1 or later](https://dotnet.microsoft.com/en-us/download/dotnet-framework)
+    - [.NET Framework 4.5.2 or later](https://dotnet.microsoft.com/en-us/download/dotnet-framework)
+    - Any other runtime that supports [.NET Standard 2.0 or later](https://docs.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0#net-standard-versions)
 
 ## Installation
 
@@ -164,11 +183,16 @@ try {
 
 ### Cleaning up
 
-`PagerDuty` contains an `HttpClient` instance, so when you're done with the instance, call `Dispose()` to clean it up and allow the default `HttpClient` to be garbage collected. A custom `HttpClient` instance, if set, won't be disposed, so that you can reuse it in multiple places.
+When you're done with a `PagerDuty` instance, call `PagerDuty.Dispose()` to clean it up and allow the default `HttpClient` to be garbage collected. A custom `HttpClient` instance, [if set](#http-settings), won't be disposed, so that you can reuse it in multiple places.
 
 ```cs
 pagerDuty.Dispose();
 ```
+
+## Examples
+- [Sample program](https://github.com/Aldaviva/PagerDuty/blob/master/Sample/Sample.cs)
+- [LaundryDuty](https://github.com/Aldaviva/LaundryDuty)
+- [DryerDuty](https://github.com/Aldaviva/DryerDuty)
 
 ## References
 

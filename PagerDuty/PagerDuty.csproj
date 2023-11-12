@@ -1,11 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
         <RootNamespace>Pager.Duty</RootNamespace>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
-        <ImplicitUsings>true</ImplicitUsings>
         <IncludeSource>true</IncludeSource>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -35,6 +34,10 @@
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup Condition="$(TargetFramework) == 'net452'">
+        <Reference Include="System.Net.Http" />
     </ItemGroup>
 
     <ItemGroup>

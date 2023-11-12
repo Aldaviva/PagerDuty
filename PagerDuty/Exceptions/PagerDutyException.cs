@@ -1,5 +1,7 @@
 ﻿// ReSharper disable UnusedAutoPropertyAccessor.Global - read by library consumers
 
+using System;
+
 namespace Pager.Duty.Exceptions;
 
 /// <summary>

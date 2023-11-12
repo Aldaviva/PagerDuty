@@ -1,7 +1,10 @@
-﻿using System.Net;
+﻿using Newtonsoft.Json;
+using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace Pager.Duty.Requests;
 
@@ -23,7 +26,7 @@ internal class JsonContent: HttpContent {
     protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) {
         using TextWriter textWriter = new StreamWriter(stream, Encoding, 1024, true);
         JsonSerializer.Serialize(textWriter, _value);
-        return Task.CompletedTask;
+        return Task.WhenAll();
     }
 
     protected override bool TryComputeLength(out long length) {

@@ -3,6 +3,9 @@
 using Pager.Duty.Exceptions;
 using Pager.Duty.Requests;
 using Pager.Duty.Responses;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Pager.Duty;
 
@@ -16,7 +19,7 @@ namespace Pager.Duty;
 /// <item><description>Add a new Integration of type "Events API V2" to your Service.</description></item>
 /// <item><description>Copy the automatically-generated Integration Key.</description></item>
 /// <item><description>Construct a new <see cref="PagerDuty"/> instance, passing it the Integration Key.</description></item>
-/// <item><description>Call the <see cref="Send(Alert)"/> method, passing a new <see cref="Event"/> parameter.</description></item>
+/// <item><description>Call the <see cref="Send(Alert)"/> method, passing a new <see cref="Alert"/> parameter.</description></item>
 /// <item><description>To get the result of the request, you can await the <see cref="Task"/> and catch <see cref="PagerDutyException"/>.</description></item>
 /// </list>
 /// <para> </para>

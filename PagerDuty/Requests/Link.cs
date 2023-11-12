@@ -1,4 +1,6 @@
-﻿namespace Pager.Duty.Requests;
+﻿using System;
+
+namespace Pager.Duty.Requests;
 
 /// <summary>
 /// Link to be shown on the alert and/or corresponding incident.
