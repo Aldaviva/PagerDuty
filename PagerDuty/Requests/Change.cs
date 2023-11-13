@@ -16,9 +16,9 @@ namespace Pager.Duty.Requests;
 /// </summary>
 public class Change: Event {
 
-    // ExceptionAdjustment: M:System.Uri.#ctor(System.String) -T:System.UriFormatException
-    private static readonly Uri ChangeUri = new("https://events.pagerduty.com/v2/change/enqueue");
-    internal override Uri ApiUri => ChangeUri;
+    // ExceptionAdjustment: M:System.Uri.#ctor(System.String,System.UriKind) -T:System.UriFormatException
+    private static readonly Uri ChangeUri = new("change/enqueue", UriKind.Relative);
+    internal override Uri ApiUriPath => ChangeUri;
 
     /// <summary>
     /// A brief text summary of the event, used to generate the summaries/titles of any associated alerts.

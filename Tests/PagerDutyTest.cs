@@ -11,9 +11,11 @@ public class PagerDutyTest {
 
     private          PagerDuty              _pagerDuty          = new("123");
     private readonly FakeHttpMessageHandler _httpMessageHandler = A.Fake<FakeHttpMessageHandler>();
+    private readonly HttpClient             _httpClient;
 
     public PagerDutyTest() {
-        _pagerDuty.HttpClient = new HttpClient(_httpMessageHandler);
+        _httpClient           = new HttpClient(_httpMessageHandler);
+        _pagerDuty.HttpClient = _httpClient;
     }
 
     [Fact]
@@ -171,6 +173,61 @@ public class PagerDutyTest {
         _pagerDuty = new PagerDuty("test using owned HttpClient");
         _pagerDuty.Dispose();
         _pagerDuty.Dispose();
+    }
+
+    [Theory]
+    [InlineData("https://events.eu.pagerduty.com/v2")]
+    [InlineData("https://events.eu.pagerduty.com/v2/")]
+    public async Task AllowAlternateBaseUrl(string baseUrl) {
+        _pagerDuty = new PagerDuty("456") {
+            BaseUrl    = new Uri(baseUrl),
+            HttpClient = _httpClient
+        };
+
+        A.CallTo(() => _httpMessageHandler.SendAsync(An<HttpRequestMessage>._))
+            .ReturnsLazily(() => new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent(string.Empty) });
+
+        await _pagerDuty.Send(new Change("change"));
+        await _pagerDuty.Send(new ResolveAlert("abc"));
+
+        A.CallTo(() => _httpMessageHandler.SendAsync(An<HttpRequestMessage>.That.Matches(
+            HttpMethod.Post, "https://events.eu.pagerduty.com/v2/change/enqueue")
+        )).MustHaveHappened();
+
+        A.CallTo(() => _httpMessageHandler.SendAsync(An<HttpRequestMessage>.That.Matches(
+            HttpMethod.Post, "https://events.eu.pagerduty.com/v2/enqueue")
+        )).MustHaveHappened();
+    }
+
+    [Fact]
+    public void BaseUrlMustBeAbsolute() {
+        Action thrower = () => _pagerDuty.BaseUrl = new Uri("/a/b/c", UriKind.Relative);
+        thrower.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Theory]
+    [InlineData("https://a.b")]
+    [InlineData("http://c.d/e")]
+    public void BaseUrlAllowsHttpSchemes(string url) {
+        _pagerDuty.BaseUrl = new Uri(url);
+    }
+
+    [Theory]
+    [InlineData("ftp://events.pagerduty.com/")]
+    [InlineData("mailto:events.pagerduty.com")]
+    [InlineData("file:///c:/windows/system32/calc.exe")]
+    public void BaseUrlDeniesNonHttpSchemes(string url) {
+        Uri    uri     = new(url);
+        Action thrower = () => { _pagerDuty.BaseUrl = uri; };
+        thrower.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void BaseUrlDeniesInvalidUris() {
+        string maxLengthPath = new(Enumerable.Repeat('p', 65489).ToArray());
+        Uri    uri           = new($"https://events.pagerduty.com/{maxLengthPath}/");
+        Action thrower       = () => { _pagerDuty.BaseUrl = uri; };
+        thrower.Should().Throw<ArgumentOutOfRangeException>();
     }
 
 }

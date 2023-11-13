@@ -35,9 +35,6 @@ jobs:
         Get-ChildItem Tests\TestResults\*\coverage.info | Rename-Item -NewName lcov.info
         exit 0
 
-    - name: Pack
-      run: dotnet pack ${{ env.ProjectName }} --no-build --configuration Release
-
     - name: Upload test report
       run: testspace Tests/TestResults/*.trx
 
@@ -48,6 +45,9 @@ jobs:
 
     - name: Stop if tests failed
       run: exit $env:TEST_EXIT_CODE
+
+    - name: Pack
+      run: dotnet pack ${{ env.ProjectName }} --no-build --configuration Release
 
     - name: Upload package
       uses: actions/upload-artifact@v3

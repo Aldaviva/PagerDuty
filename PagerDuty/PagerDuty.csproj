@@ -12,7 +12,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>1701,1702</NoWarn>
 
-        <Version>1.0.0</Version>
+        <Version>1.1.0</Version>
         <Title>PagerDuty</Title>
         <PackageId>PagerDuty</PackageId>
         <Product>PagerDuty</Product>

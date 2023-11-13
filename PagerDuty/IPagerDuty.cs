@@ -47,6 +47,15 @@ public interface IPagerDuty: IDisposable {
     HttpClient HttpClient { get; set; }
 
     /// <summary>
+    /// <para>Optional root URL of the PagerDuty service to which events should be sent. Useful if your tenant is hosted in PagerDuty's European Union region.</para>
+    /// <para>If you don't set this property, the default value will be the global cluster, <c>https://events.pagerduty.com/v2/</c>.</para>
+    /// <para>To use the EU cluster, set this to <c>https://events.eu.pagerduty.com/v2/</c>.</para>
+    /// <para>To use a mock cluster, set this to <c>https://stoplight.io/mocks/pagerduty-upgrade/api-schema/2748265</c> (see <see href="https://developer.pagerduty.com/api-reference/YXBpOjI3NDgyNjU-pager-duty-v2-events-api"/>).</para>
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">the URL does not contain a scheme and host, or the scheme is neither <c>https</c> nor <c>http</c>, or the resulting request URL would be invalid</exception>
+    Uri BaseUrl { get; set; }
+
+    /// <summary>
     /// <para>Upload an Alert event to PagerDuty.</para>
     /// <para>To send follow-up events later which relate to the same incident, make sure to read the <see cref="AlertResponse.DedupKey"/> from the response. By setting the same <c>DedupKey</c> in an <see cref="AcknowledgeAlert"/> or <see cref="ResolveAlert"/> that you received from the response to a prior <see cref="TriggerAlert"/>, you can acknowledge or resolve the incident that you triggered.</para>
     /// </summary>

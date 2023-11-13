@@ -12,6 +12,7 @@
 1. [Installation](#installation)
 1. [Configuration](#configuration)
     - [HTTP settings](#http-settings)
+    - [Base URL](#base-url)
 1. [Usage](#usage)
     - [Triggering an Alert](#triggering-an-alert)
     - [Acknowledging an Alert](#acknowledging-an-alert)
@@ -91,6 +92,14 @@ pagerDuty.HttpClient = new HttpClient(new SocketsHttpHandler {
 }) {
     Timeout = TimeSpan.FromSeconds(5)
 };
+```
+
+### Base URL
+By default, this library sends event requests to the global PagerDuty cluster, `https://events.pagerduty.com/v2/`.
+
+You may change this by setting the `IPagerDuty.BaseUrl` property. For example, if your tenant is hosted in the European Union, you must change the base URL to the EU cluster:
+```cs
+pagerDuty.BaseUrl = new Uri("https://events.eu.pagerduty.com/v2/");
 ```
 
 ## Usage

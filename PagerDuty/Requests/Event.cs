@@ -11,6 +11,6 @@ public abstract class Event {
 
     [JsonProperty] internal string? RoutingKey { get; set; }
 
-    internal abstract Uri ApiUri { get; }
+    internal abstract Uri ApiUriPath { get; }
 
 }

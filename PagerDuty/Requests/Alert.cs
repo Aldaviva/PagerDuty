@@ -9,9 +9,9 @@ namespace Pager.Duty.Requests;
 /// </summary>
 public abstract class Alert: Event {
 
-    // ExceptionAdjustment: M:System.Uri.#ctor(System.String) -T:System.UriFormatException
-    private static readonly Uri AlertUri = new("https://events.pagerduty.com/v2/enqueue");
-    internal override Uri ApiUri => AlertUri;
+    // ExceptionAdjustment: M:System.Uri.#ctor(System.String,System.UriKind) -T:System.UriFormatException
+    private static readonly Uri AlertUri = new("enqueue", UriKind.Relative);
+    internal override Uri ApiUriPath => AlertUri;
 
     [JsonProperty]
     internal EventAction EventAction { get; }

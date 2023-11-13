@@ -28,6 +28,9 @@ public class PagerDuty: IPagerDuty {
     private HttpClient _httpClient     = new();
     private bool       _ownsHttpClient = true;
 
+    // ExceptionAdjustment: M:System.Uri.#ctor(System.String,System.UriKind) -T:System.UriFormatException
+    private Uri _baseUrl = new("https://events.pagerduty.com/v2/", UriKind.Absolute);
+
     /// <inheritdoc />
     public HttpClient HttpClient {
         get => _httpClient;
@@ -38,6 +41,30 @@ public class PagerDuty: IPagerDuty {
             }
 
             _httpClient = value;
+        }
+    }
+
+    /// <inheritdoc />
+    public Uri BaseUrl {
+        get => _baseUrl;
+        set {
+            if (value.IsAbsoluteUri && value.Scheme.ToLowerInvariant() is "http" or "https") {
+                try {
+                    if (!value.AbsolutePath.EndsWith("/")) {
+                        UriBuilder builder = new(value);
+                        builder.Path += '/';
+                        value        =  builder.Uri;
+                    }
+
+                    _        = new Uri(value, new TriggerAlert(Severity.Error, string.Empty).ApiUriPath);
+                    _baseUrl = value;
+                    return;
+                } catch (Exception) {
+                    // throw exception below
+                }
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(BaseUrl), value, "must be an HTTPS or HTTP URL");
         }
     }
 
@@ -67,10 +94,11 @@ public class PagerDuty: IPagerDuty {
 
     /// <exception cref="NetworkException"></exception>
     /// <exception cref="WebApplicationException"></exception>
+    // ExceptionAdjustment: M:System.Uri.#ctor(System.Uri,System.Uri) -T:System.UriFormatException
     private async Task<TResponse> Send<TResponse>(Event pagerDutyEvent) {
         pagerDutyEvent.RoutingKey = _routingKey;
 
-        Uri uri = pagerDutyEvent.ApiUri;
+        Uri uri = new(BaseUrl, pagerDutyEvent.ApiUriPath);
 
         using HttpContent requestBody = new JsonContent(pagerDutyEvent) { JsonSerializer = _jsonSerializer, Encoding = Utf8 };
 
