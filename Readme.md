@@ -22,6 +22,7 @@
     - [Cleaning up](#cleaning-up)
 1. [Examples](#examples)
 1. [References](#references)
+1. [Presentation](#presentation)
 
 <!-- /MarkdownTOC -->
 
@@ -208,3 +209,12 @@ pagerDuty.Dispose();
 - [PagerDuty Knowledge Base](https://support.pagerduty.com/docs/alerts)
 - [PagerDuty Events API V2 Documentation](https://developer.pagerduty.com/docs/events-api-v2/overview/)
 - [PagerDuty Events API V2 API Reference](https://developer.pagerduty.com/api-reference/YXBpOjI3NDgyNjU-pager-duty-v2-events-api)
+
+## Presentation
+
+I gave a talk about this project during PagerDuty's 2024-02-09 How-To Happy Hour on their [Twitch channel](https://twitch.tv/pagerduty).
+
+- [🎞 Video recording](https://www.youtube.com/watch?v=0Gui4cGQ2ds)
+- [💡 Community spotlight](https://www.pagerduty.com/blog/community-spotlight-ben-hutchison/)
+
+[![Video](https://i.ytimg.com/vi/0Gui4cGQ2ds/hqdefault.jpg)](https://www.youtube.com/watch?v=0Gui4cGQ2ds)

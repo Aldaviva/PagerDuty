@@ -1,4 +1,7 @@
-﻿namespace Tests.Helpers;
+﻿using System.Linq;
+using System.Net.Http;
+
+namespace Tests.Helpers;
 
 internal class HttpRequestMessageFormatter: ArgumentValueFormatter<HttpRequestMessage> {
 

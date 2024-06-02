@@ -2,6 +2,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Pager.Duty;
 using Pager.Duty.Requests;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Tests;
 

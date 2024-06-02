@@ -59,8 +59,10 @@ public class PagerDuty: IPagerDuty {
                     _        = new Uri(value, new TriggerAlert(Severity.Error, string.Empty).ApiUriPath);
                     _baseUrl = value;
                     return;
-                } catch (Exception) {
-                    // throw exception below
+                } catch (ArgumentException) {
+                    // throw ArgumentOutOfRangeException below
+                } catch (UriFormatException) {
+                    // throw ArgumentOutOfRangeException below
                 }
             }
 

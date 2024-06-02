@@ -3,4 +3,4 @@
 /// <summary>
 /// A change has been created or updated.
 /// </summary>
-public class ChangeResponse: EventResponse { }
+public class ChangeResponse: EventResponse;

@@ -1,4 +1,9 @@
-﻿namespace Tests.Helpers;
+﻿using System.IO;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Tests.Helpers;
 
 public abstract class FakeHttpMessageHandler: HttpMessageHandler {
 

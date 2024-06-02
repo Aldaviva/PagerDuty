@@ -1,6 +1,8 @@
 ﻿using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.IO;
+using System.Net.Http;
 using System.Text;
 
 namespace Tests.Helpers;
@@ -32,8 +34,7 @@ public static class TestExtensions {
     }
 
     public static bool IsMatch(HttpRequestMessage actual, HttpMethod expectedMethod, string expectedUri) {
-        return actual.Method == expectedMethod &&
-            actual.RequestUri!.ToString() == expectedUri;
+        return actual.Method == expectedMethod && actual.RequestUri!.ToString() == expectedUri;
     }
 
 #pragma warning disable CS0618 // Type or member is obsolete - Options does not exist in .NET Framework 4.5.2
