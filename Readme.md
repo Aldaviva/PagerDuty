@@ -217,4 +217,4 @@ I gave a talk about this project during PagerDuty's 2024-02-09 How-To Happy Hour
 - [🎞 Video recording](https://www.youtube.com/watch?v=0Gui4cGQ2ds)
 - [💡 Community spotlight](https://www.pagerduty.com/blog/community-spotlight-ben-hutchison/)
 
-[![Video](https://i.ytimg.com/vi/0Gui4cGQ2ds/hqdefault.jpg)](https://www.youtube.com/watch?v=0Gui4cGQ2ds)
+[![Video](https://i.imgur.com/acOTH8I.jpeg)](https://www.youtube.com/watch?v=0Gui4cGQ2ds)
