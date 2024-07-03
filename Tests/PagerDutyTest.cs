@@ -42,6 +42,7 @@ public class PagerDutyTest {
         alertResponse.DedupKey.Should().Be("abc");
         alertResponse.Message.Should().Be("Event processed");
         alertResponse.Status.Should().Be("success");
+        alertResponse.IsSuccessful.Should().BeTrue();
 
         const string expectedJsonBody = """
                                         {
@@ -158,10 +159,22 @@ public class PagerDutyTest {
 
     [Fact]
     public void DisposeOwnedHttpClient() {
-        _pagerDuty = new PagerDuty("test using owned HttpClient");
+        _pagerDuty                    = new PagerDuty("test using owned HttpClient");
+        _pagerDuty.HttpClient.Timeout = TimeSpan.FromSeconds(2);
         _pagerDuty.Dispose();
 
         Action thrower = () => _pagerDuty.HttpClient.Timeout = TimeSpan.FromSeconds(1);
+        thrower.Should().Throw<ObjectDisposedException>();
+    }
+
+    [Fact]
+    public void DisposeOwnedHttpClientWhenSwitchingToNonOwnedHttpClient() {
+        _pagerDuty = new PagerDuty("ownedToNonOwned");
+        HttpClient ownedHttpClient = _pagerDuty.HttpClient;
+        _pagerDuty.HttpClient.Timeout = TimeSpan.FromSeconds(2);
+        _pagerDuty.HttpClient         = new HttpClient();
+
+        Action thrower = () => ownedHttpClient.Timeout = TimeSpan.FromSeconds(1);
         thrower.Should().Throw<ObjectDisposedException>();
     }
 

@@ -9,6 +9,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Pager.Duty;
@@ -25,22 +26,22 @@ public class PagerDuty: IPagerDuty {
         Converters        = { new StringEnumConverter(JsonNamingStrategy, false) }
     };
 
-    private HttpClient _httpClient     = new();
-    private bool       _ownsHttpClient = true;
+    private readonly Lazy<HttpClient> _builtInHttpClient = new(LazyThreadSafetyMode.ExecutionAndPublication);
+
+    private HttpClient? _customHttpClient;
 
     // ExceptionAdjustment: M:System.Uri.#ctor(System.String,System.UriKind) -T:System.UriFormatException
     private Uri _baseUrl = new("https://events.pagerduty.com/v2/", UriKind.Absolute);
 
     /// <inheritdoc />
     public HttpClient HttpClient {
-        get => _httpClient;
+        get => _customHttpClient ?? _builtInHttpClient.Value;
         set {
-            if (_ownsHttpClient && _httpClient != value) {
-                _ownsHttpClient = false;
-                _httpClient.Dispose();
+            if (_customHttpClient == null && _builtInHttpClient.IsValueCreated) {
+                _builtInHttpClient.Value.Dispose();
             }
 
-            _httpClient = value;
+            _customHttpClient = value;
         }
     }
 
@@ -59,8 +60,6 @@ public class PagerDuty: IPagerDuty {
                     _        = new Uri(value, new TriggerAlert(Severity.Error, string.Empty).ApiUriPath);
                     _baseUrl = value;
                     return;
-                } catch (ArgumentException) {
-                    // throw ArgumentOutOfRangeException below
                 } catch (UriFormatException) {
                     // throw ArgumentOutOfRangeException below
                 }
@@ -135,8 +134,8 @@ public class PagerDuty: IPagerDuty {
     /// Clean up this instance to ensure memory can be freed by the garbage collector. It will not be able to send requests after calling this method.
     /// </summary>
     public void Dispose() {
-        if (_ownsHttpClient) {
-            HttpClient.Dispose();
+        if (_customHttpClient == null && _builtInHttpClient.IsValueCreated) {
+            _builtInHttpClient.Value.Dispose();
         }
     }
 
