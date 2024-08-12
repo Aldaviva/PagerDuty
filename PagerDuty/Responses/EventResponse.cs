@@ -24,4 +24,21 @@ public abstract class EventResponse {
 
     internal EventResponse() { }
 
+    /// <inheritdoc cref="Equals(object?)" />
+    protected bool Equals(EventResponse other) {
+        return Message == other.Message && Status == other.Status;
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj) {
+        return ReferenceEquals(this, obj) || (obj is EventResponse other && Equals(other));
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode() {
+        unchecked {
+            return (Message.GetHashCode() * 397) ^ Status.GetHashCode();
+        }
+    }
+
 }

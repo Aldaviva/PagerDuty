@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 // ReSharper disable ReturnTypeCanBeEnumerable.Global - would prevent consumers from initializing the collection
 // ReSharper disable CollectionNeverQueried.Global - queried by Json.NET during serialization
@@ -48,13 +49,13 @@ public class Change: Event {
     /// <para>Links to be shown on the alert and/or corresponding incident.</para>
     /// <para>Optional. When omitted, an empty list is sent.</para>
     /// </summary>
-    public ICollection<Link> Links { get; } = new List<Link>();
+    public ICollection<Link> Links { get; } = [];
 
     /// <summary>
     /// <para>Images to be displayed on the alert and/or corresponding incident.</para>
     /// <para>Optional. When omitted, an empty list is sent.</para>
     /// </summary>
-    public ICollection<Image> Images { get; } = new List<Image>();
+    public ICollection<Image> Images { get; } = [];
 
     [JsonProperty]
     internal object Payload => new { Summary, Source, Timestamp, CustomDetails };
@@ -65,6 +66,33 @@ public class Change: Event {
     /// <param name="summary">A brief text summary of the event, used to generate the summaries/titles of any associated alerts.</param>
     public Change(string summary) {
         Summary = summary;
+    }
+
+    /// <inheritdoc cref="Equals(object?)" />
+    protected bool Equals(Change other) {
+        return Summary == other.Summary && Source == other.Source && Nullable.Equals(Timestamp, other.Timestamp) && Equals(CustomDetails, other.CustomDetails)
+            && Links.SequenceEqual(other.Links) && Images.SequenceEqual(other.Images);
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj) {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((Change) obj);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode() {
+        unchecked {
+            int hashCode = Summary.GetHashCode();
+            hashCode = (hashCode * 397) ^ (Source != null ? Source.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ Timestamp.GetHashCode();
+            hashCode = (hashCode * 397) ^ (CustomDetails != null ? CustomDetails.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ Links.GetHashCode();
+            hashCode = (hashCode * 397) ^ Images.GetHashCode();
+            return hashCode;
+        }
     }
 
 }

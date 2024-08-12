@@ -10,9 +10,9 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>1701,1702</NoWarn>
+        <NoWarn>1701,1702,IDE0290</NoWarn>
 
-        <Version>1.1.1</Version>
+        <Version>1.1.2</Version>
         <Title>PagerDuty</Title>
         <PackageId>PagerDuty</PackageId>
         <Product>PagerDuty</Product>

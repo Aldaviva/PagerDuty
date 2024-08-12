@@ -20,4 +20,19 @@ public abstract class Alert: Event {
         EventAction = eventAction;
     }
 
+    /// <inheritdoc cref="Equals(object?)" />
+    protected bool Equals(Alert other) {
+        return EventAction == other.EventAction;
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj) {
+        return ReferenceEquals(this, obj) || (obj is Alert other && Equals(other));
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode() {
+        return (int) EventAction;
+    }
+
 }
