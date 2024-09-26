@@ -157,32 +157,55 @@ public class PagerDutyTest {
         actual.StatusCode.Should().Be(402);
     }
 
+    private static void AssertDisposed(HttpClient httpClient) {
+        ((Action) (() => httpClient.Timeout = TimeSpan.FromSeconds(1))).Should().Throw<ObjectDisposedException>();
+    }
+
+    private static void AssertNotDisposed(HttpClient httpClient) {
+        httpClient.Timeout = TimeSpan.FromSeconds(1);
+    }
+
     [Fact]
     public void DisposeOwnedHttpClient() {
-        _pagerDuty                    = new PagerDuty("test using owned HttpClient");
-        _pagerDuty.HttpClient.Timeout = TimeSpan.FromSeconds(2);
+        _pagerDuty = new PagerDuty("test using owned HttpClient");
+        AssertNotDisposed(_pagerDuty.HttpClient);
         _pagerDuty.Dispose();
 
-        Action thrower = () => _pagerDuty.HttpClient.Timeout = TimeSpan.FromSeconds(1);
-        thrower.Should().Throw<ObjectDisposedException>();
+        AssertDisposed(_pagerDuty.HttpClient);
     }
 
     [Fact]
     public void DisposeOwnedHttpClientWhenSwitchingToNonOwnedHttpClient() {
         _pagerDuty = new PagerDuty("ownedToNonOwned");
         HttpClient ownedHttpClient = _pagerDuty.HttpClient;
-        _pagerDuty.HttpClient.Timeout = TimeSpan.FromSeconds(2);
-        _pagerDuty.HttpClient         = new HttpClient();
+        AssertNotDisposed(ownedHttpClient);
 
-        Action thrower = () => ownedHttpClient.Timeout = TimeSpan.FromSeconds(1);
-        thrower.Should().Throw<ObjectDisposedException>();
+        HttpClient customHttpClient = new();
+        _pagerDuty.HttpClient = customHttpClient;
+        _pagerDuty.HttpClient.Should().BeSameAs(customHttpClient);
+        AssertDisposed(ownedHttpClient);
+        AssertNotDisposed(_pagerDuty.HttpClient);
     }
 
     [Fact]
     public void DontDisposeNonOwnedHttpClient() {
+        _pagerDuty.HttpClient.Should().BeSameAs(_httpClient);
         _pagerDuty.Dispose();
+        AssertNotDisposed(_pagerDuty.HttpClient);
+    }
 
-        _pagerDuty.HttpClient.Timeout = TimeSpan.FromSeconds(1);
+    [Fact]
+    public void DontDisposeOwnedHttpClientWhenSetIdempotently() {
+        PagerDuty  pagerDuty       = new("abc");
+        HttpClient ownedHttpClient = pagerDuty.HttpClient;
+        AssertNotDisposed(ownedHttpClient);
+
+        pagerDuty.HttpClient = ownedHttpClient;
+        pagerDuty.HttpClient.Should().BeSameAs(ownedHttpClient);
+        AssertNotDisposed(ownedHttpClient);
+
+        pagerDuty.Dispose();
+        AssertDisposed(pagerDuty.HttpClient);
     }
 
     [Fact]

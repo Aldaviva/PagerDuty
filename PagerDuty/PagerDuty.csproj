@@ -32,6 +32,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <AdditionalFiles Include="ExceptionAdjustments.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>

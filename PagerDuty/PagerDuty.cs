@@ -21,27 +21,31 @@ public class PagerDuty: IPagerDuty {
     private static readonly Encoding       Utf8               = new UTF8Encoding(false, true);
 
     internal static readonly JsonSerializerSettings JsonSerializerSettings = new() {
-        NullValueHandling = NullValueHandling.Ignore,
-        ContractResolver  = new DefaultContractResolver { NamingStrategy = JsonNamingStrategy },
-        Converters        = { new StringEnumConverter(JsonNamingStrategy, false) }
+        MissingMemberHandling = MissingMemberHandling.Ignore,
+        NullValueHandling     = NullValueHandling.Ignore,
+        ContractResolver      = new DefaultContractResolver { NamingStrategy = JsonNamingStrategy },
+        Converters            = { new StringEnumConverter(JsonNamingStrategy, false) }
     };
 
+    private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(JsonSerializerSettings);
+
+    private readonly string           _integrationKey;
     private readonly Lazy<HttpClient> _builtInHttpClient = new(LazyThreadSafetyMode.ExecutionAndPublication);
 
+    private Uri         _baseUrl = new("https://events.pagerduty.com/v2/", UriKind.Absolute);
     private HttpClient? _customHttpClient;
-
-    // ExceptionAdjustment: M:System.Uri.#ctor(System.String,System.UriKind) -T:System.UriFormatException
-    private Uri _baseUrl = new("https://events.pagerduty.com/v2/", UriKind.Absolute);
 
     /// <inheritdoc />
     public HttpClient HttpClient {
         get => _customHttpClient ?? _builtInHttpClient.Value;
         set {
-            if (_customHttpClient == null && _builtInHttpClient.IsValueCreated) {
+            bool builtInExists     = _builtInHttpClient.IsValueCreated;
+            bool newValueIsBuiltIn = builtInExists && _builtInHttpClient.Value == value;
+
+            _customHttpClient = builtInExists && newValueIsBuiltIn ? null : value;
+            if (builtInExists && !newValueIsBuiltIn) {
                 _builtInHttpClient.Value.Dispose();
             }
-
-            _customHttpClient = value;
         }
     }
 
@@ -57,7 +61,7 @@ public class PagerDuty: IPagerDuty {
                         value        =  builder.Uri;
                     }
 
-                    _        = new Uri(value, new TriggerAlert(Severity.Error, string.Empty).ApiUriPath);
+                    _        = new Uri(value, new TriggerAlert(Severity.Info, string.Empty).ApiUriPath);
                     _baseUrl = value;
                     return;
                 } catch (UriFormatException) {
@@ -69,9 +73,6 @@ public class PagerDuty: IPagerDuty {
         }
     }
 
-    private readonly JsonSerializer _jsonSerializer;
-    private readonly string         _routingKey;
-
     /// <summary>
     /// <para>Create a new Service-specific instance of a client that sends Events to the PagerDuty Events API V2.</para>
     /// <para>You can retain this instance for the lifetime of your application, or create a new instance for each Event. Be sure to <see cref="Dispose"/> of instances when you're done with them.</para>
@@ -79,8 +80,7 @@ public class PagerDuty: IPagerDuty {
     /// </summary>
     /// <param name="integrationKey">The GUID of one of your Events API V2 integrations. This is the "Integration Key" listed on the Events API V2 integration's detail page.</param>
     public PagerDuty(string integrationKey) {
-        _routingKey     = integrationKey;
-        _jsonSerializer = JsonSerializer.Create(JsonSerializerSettings);
+        _integrationKey = integrationKey;
     }
 
     /// <inheritdoc />
@@ -95,13 +95,12 @@ public class PagerDuty: IPagerDuty {
 
     /// <exception cref="NetworkException"></exception>
     /// <exception cref="WebApplicationException"></exception>
-    // ExceptionAdjustment: M:System.Uri.#ctor(System.Uri,System.Uri) -T:System.UriFormatException
     private async Task<TResponse> Send<TResponse>(Event pagerDutyEvent) {
-        pagerDutyEvent.RoutingKey = _routingKey;
+        pagerDutyEvent.RoutingKey = _integrationKey;
 
         Uri uri = new(BaseUrl, pagerDutyEvent.ApiUriPath);
 
-        using HttpContent requestBody = new JsonContent(pagerDutyEvent) { JsonSerializer = _jsonSerializer, Encoding = Utf8 };
+        using HttpContent requestBody = new JsonContent(pagerDutyEvent) { JsonSerializer = JsonSerializer, Encoding = Utf8 };
 
         HttpResponseMessage response;
         try {
@@ -111,21 +110,23 @@ public class PagerDuty: IPagerDuty {
         }
 
         using (response) {
-            int statusCode = (int) response.StatusCode;
-            if (statusCode == (int) HttpStatusCode.Accepted) {
+            HttpStatusCode statusCode = response.StatusCode;
+            if (statusCode == HttpStatusCode.Accepted) {
                 using Stream     responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 using TextReader textReader     = new StreamReader(responseStream, Utf8);
                 using JsonReader jsonReader     = new JsonTextReader(textReader);
-                return _jsonSerializer.Deserialize<TResponse>(jsonReader)!;
+                return JsonSerializer.Deserialize<TResponse>(jsonReader)!;
             } else {
                 string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 string message      = $"Failed to send {typeof(Event)} to {uri}";
-                throw statusCode switch {
-                    (int) HttpStatusCode.BadRequest                       => new BadRequest(message) { Response                          = responseBody },
-                    429                                                   => new RateLimited(message) { Response                         = responseBody },
-                    >= (int) HttpStatusCode.InternalServerError and < 600 => new InternalServerError(statusCode, message) { Response     = responseBody },
-                    _                                                     => new WebApplicationException(statusCode, message) { Response = responseBody }
+                WebApplicationException exception = statusCode switch {
+                    HttpStatusCode.BadRequest                                         => new BadRequest(message),
+                    (HttpStatusCode) 429                                              => new RateLimited(message),
+                    >= HttpStatusCode.InternalServerError and <= (HttpStatusCode) 599 => new InternalServerError((int) statusCode, message),
+                    _                                                                 => new WebApplicationException((int) statusCode, message)
                 };
+                exception.Response = responseBody;
+                throw exception;
             }
         }
     }
@@ -134,9 +135,11 @@ public class PagerDuty: IPagerDuty {
     /// Clean up this instance to ensure memory can be freed by the garbage collector. It will not be able to send requests after calling this method.
     /// </summary>
     public void Dispose() {
-        if (_customHttpClient == null && _builtInHttpClient.IsValueCreated) {
+        if (_builtInHttpClient.IsValueCreated) {
             _builtInHttpClient.Value.Dispose();
         }
+
+        GC.SuppressFinalize(this);
     }
 
 }
