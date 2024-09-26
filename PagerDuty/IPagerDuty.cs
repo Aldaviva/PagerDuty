@@ -42,7 +42,7 @@ public interface IPagerDuty: IDisposable {
     /// <summary>
     /// <para>Optional <see cref="System.Net.Http.HttpClient"/> to use for sending API requests to PagerDuty. Useful to set if you need custom settings for a proxy or TLS, for example.</para>
     /// <para>If you don't set this property, a default instance will automatically be created and used instead.</para>
-    /// <para>The default instance will be automatically disposed of when you call <see cref="IDisposable.Dispose"/>, but custom instances you set here will not, so that you can reuse them.</para>
+    /// <para>The default instance will be automatically disposed of when you call <see cref="IDisposable.Dispose"/> on <see cref="IPagerDuty"/> and when you set this property to a custom value, but custom instances you set here will not be automatically disposed of, so that you can reuse them.</para>
     /// </summary>
     HttpClient HttpClient { get; set; }
 

@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 // ReSharper disable ReturnTypeCanBeEnumerable.Global - would prevent consumers from initializing the collection
 // ReSharper disable CollectionNeverQueried.Global - queried by Json.NET during serialization
@@ -17,7 +16,6 @@ namespace Pager.Duty.Requests;
 /// </summary>
 public class Change: Event {
 
-    // ExceptionAdjustment: M:System.Uri.#ctor(System.String,System.UriKind) -T:System.UriFormatException
     private static readonly Uri ChangeUri = new("change/enqueue", UriKind.Relative);
     internal override Uri ApiUriPath => ChangeUri;
 
@@ -66,33 +64,6 @@ public class Change: Event {
     /// <param name="summary">A brief text summary of the event, used to generate the summaries/titles of any associated alerts.</param>
     public Change(string summary) {
         Summary = summary;
-    }
-
-    /// <inheritdoc cref="Equals(object?)" />
-    protected bool Equals(Change other) {
-        return Summary == other.Summary && Source == other.Source && Nullable.Equals(Timestamp, other.Timestamp) && Equals(CustomDetails, other.CustomDetails)
-            && Links.SequenceEqual(other.Links) && Images.SequenceEqual(other.Images);
-    }
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj) {
-        if (obj is null) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != GetType()) return false;
-        return Equals((Change) obj);
-    }
-
-    /// <inheritdoc />
-    public override int GetHashCode() {
-        unchecked {
-            int hashCode = Summary.GetHashCode();
-            hashCode = (hashCode * 397) ^ (Source != null ? Source.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ Timestamp.GetHashCode();
-            hashCode = (hashCode * 397) ^ (CustomDetails != null ? CustomDetails.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ Links.GetHashCode();
-            hashCode = (hashCode * 397) ^ Images.GetHashCode();
-            return hashCode;
-        }
     }
 
 }

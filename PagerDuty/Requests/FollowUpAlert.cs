@@ -25,21 +25,4 @@ public abstract class FollowUpAlert: Alert {
         DedupKey = dedupKey;
     }
 
-    /// <inheritdoc cref="Equals(object?)" />
-    protected bool Equals(FollowUpAlert other) {
-        return base.Equals(other) && DedupKey == other.DedupKey;
-    }
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj) {
-        return ReferenceEquals(this, obj) || (obj is FollowUpAlert other && Equals(other));
-    }
-
-    /// <inheritdoc />
-    public override int GetHashCode() {
-        unchecked {
-            return (base.GetHashCode() * 397) ^ DedupKey.GetHashCode();
-        }
-    }
-
 }

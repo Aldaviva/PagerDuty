@@ -43,18 +43,8 @@ public class Image {
     /// <param name="altText">Optional alternative text for the image.</param>
     public Image(Uri source, Uri? href, string? altText): this(source.ToString(), href?.ToString(), altText) { }
 
-    /// <inheritdoc cref="Equals(object?)" />
-    protected bool Equals(Image other) {
-        return Source == other.Source && Href == other.Href && AltText == other.AltText;
-    }
-
     /// <inheritdoc />
-    public override bool Equals(object? obj) {
-        if (obj is null) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != GetType()) return false;
-        return Equals((Image) obj);
-    }
+    public override bool Equals(object? obj) => ReferenceEquals(this, obj) || (obj is Image other && Source == other.Source && Href == other.Href && AltText == other.AltText);
 
     /// <inheritdoc />
     public override int GetHashCode() {

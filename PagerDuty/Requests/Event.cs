@@ -9,6 +9,9 @@ namespace Pager.Duty.Requests;
 /// </summary>
 public abstract class Event {
 
+    /// <summary>
+    /// Service-specific Integration Key
+    /// </summary>
     [JsonProperty] internal string? RoutingKey { get; set; }
 
     internal abstract Uri ApiUriPath { get; }

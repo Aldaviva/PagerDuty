@@ -112,40 +112,4 @@ public class TriggerAlert: Alert {
         Severity = severity;
     }
 
-    /// <inheritdoc cref="Equals(object?)" />
-    protected bool Equals(TriggerAlert other) {
-        return base.Equals(other) && DedupKey == other.DedupKey && Summary == other.Summary && Source == other.Source && Severity == other.Severity && Nullable.Equals(Timestamp, other.Timestamp)
-            && Component == other.Component && Group == other.Group && Class == other.Class && Equals(CustomDetails, other.CustomDetails) && Links.Equals(other.Links) && Images.Equals(other.Images)
-            && Client == other.Client && ClientUrl == other.ClientUrl;
-    }
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj) {
-        if (obj is null) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != GetType()) return false;
-        return Equals((TriggerAlert) obj);
-    }
-
-    /// <inheritdoc />
-    public override int GetHashCode() {
-        unchecked {
-            int hashCode = base.GetHashCode();
-            hashCode = (hashCode * 397) ^ (DedupKey != null ? DedupKey.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ Summary.GetHashCode();
-            hashCode = (hashCode * 397) ^ Source.GetHashCode();
-            hashCode = (hashCode * 397) ^ (int) Severity;
-            hashCode = (hashCode * 397) ^ Timestamp.GetHashCode();
-            hashCode = (hashCode * 397) ^ (Component != null ? Component.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (Group != null ? Group.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (Class != null ? Class.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (CustomDetails != null ? CustomDetails.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ Links.GetHashCode();
-            hashCode = (hashCode * 397) ^ Images.GetHashCode();
-            hashCode = (hashCode * 397) ^ (Client != null ? Client.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (ClientUrl != null ? ClientUrl.GetHashCode() : 0);
-            return hashCode;
-        }
-    }
-
 }
