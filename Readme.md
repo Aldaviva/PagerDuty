@@ -203,6 +203,7 @@ pagerDuty.Dispose();
 - [Sample program](https://github.com/Aldaviva/PagerDuty/blob/master/Sample/Sample.cs)
 - [LaundryDuty](https://github.com/Aldaviva/LaundryDuty)
 - [DryerDuty](https://github.com/Aldaviva/DryerDuty)
+- [FreshPager](https://github.com/Aldaviva/FreshPager)
 
 ## References
 
