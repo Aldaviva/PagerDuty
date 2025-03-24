@@ -1,0 +1,126 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Pager.Duty.Webhooks.Requests;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Pager.Duty.Webhooks;
+
+public class WebhookResource {
+
+    private static readonly IReadOnlyDictionary<string, Type> PayloadTypes = new Dictionary<string, Type> {
+        [PingWebhookPayload.ResourceType]                     = typeof(PingWebhookPayload),
+        [IncidentWebhookPayload.ResourceType]                 = typeof(IncidentWebhookPayload),
+        [IncidentNoteWebhookPayload.ResourceType]             = typeof(IncidentNoteWebhookPayload),
+        [IncidentConferenceBridgeWebhookPayload.ResourceType] = typeof(IncidentConferenceBridgeWebhookPayload),
+        [IncidentFieldValuesWebhookPayload.ResourceType]      = typeof(IncidentFieldValuesWebhookPayload),
+        [IncidentStatusUpdateWebhookPayload.ResourceType]     = typeof(IncidentStatusUpdateWebhookPayload),
+        [IncidentResponderWebhookPayload.ResourceType]        = typeof(IncidentResponderWebhookPayload),
+        [IncidentWorkflowInstanceWebhookPayload.ResourceType] = typeof(IncidentWorkflowInstanceWebhookPayload),
+        [ServiceWebhookPayload.ResourceType]                  = typeof(ServiceWebhookPayload)
+    };
+
+    private readonly byte[] _pagerDutySecret;
+
+    private ILogger<WebhookResource>? _logger;
+
+    public event EventHandler<PingWebhookPayload>? PingReceived;
+    public event EventHandler<IncidentWebhookPayload>? IncidentReceived;
+    public event EventHandler<IncidentNoteWebhookPayload>? IncidentNoteReceived;
+    public event EventHandler<IncidentConferenceBridgeWebhookPayload>? IncidentConferenceBridgeReceived;
+    public event EventHandler<IncidentFieldValuesWebhookPayload>? IncidentFieldValuesReceived;
+    public event EventHandler<IncidentStatusUpdateWebhookPayload>? IncidentStatusUpdateReceived;
+    public event EventHandler<IncidentResponderWebhookPayload>? IncidentResponderReceived;
+    public event EventHandler<IncidentWorkflowInstanceWebhookPayload>? IncidentWorkflowInstanceReceived;
+    public event EventHandler<ServiceWebhookPayload>? ServiceReceived;
+
+    public WebhookResource(string pagerDutySecret) {
+        _pagerDutySecret = Encoding.ASCII.GetBytes(pagerDutySecret);
+    }
+
+    // ExceptionAdjustment: M:System.IO.Stream.CopyToAsync(System.IO.Stream) -T:System.NotSupportedException
+    public async Task HandlePostRequest(HttpContext httpContext) {
+        HttpRequest  req = httpContext.Request;
+        HttpResponse res = httpContext.Response;
+        _logger        ??= httpContext.RequestServices.GetRequiredService<ILogger<WebhookResource>>();
+        res.StatusCode =   StatusCodes.Status204NoContent;
+
+        MemoryStream bodyBuffer = new((int) (req.ContentLength ?? 0));
+        await httpContext.Request.Body.CopyToAsync(bodyBuffer).ConfigureAwait(false);
+        bodyBuffer.Position = 0;
+        byte[] body = bodyBuffer.ToArray();
+
+        if (!ValidateSignature(httpContext, body)) {
+            res.StatusCode = StatusCodes.Status403Forbidden;
+            _logger.LogWarning("Invalid signature, ignoring webhook that was spoofing PagerDuty");
+            return;
+        }
+
+        using TextReader       streamReader = new StreamReader(bodyBuffer, Encoding.UTF8);
+        await using JsonReader jsonReader   = new JsonTextReader(streamReader);
+        if (_logger.IsEnabled(LogLevel.Trace)) {
+            _logger.LogTrace("Received event with data {data}", await streamReader.ReadToEndAsync().ConfigureAwait(false));
+            bodyBuffer.Position = 0;
+        }
+
+        if (PagerDuty.JsonSerializer.Deserialize<WebhookPayloadEnvelope>(jsonReader) is not { } payloadEnvelope) {
+            _logger.LogError("Failed to convert 'data' property to {type}", nameof(WebhookPayloadEnvelope));
+            return;
+        }
+
+        if (!PayloadTypes.TryGetValue(payloadEnvelope.Event.ResourceType, out Type? dataType)) {
+            _logger.LogWarning("Unrecognized resource type {type} received in PagerDuty webhook, ignoring", payloadEnvelope.Event.ResourceType);
+            return;
+        }
+
+        IWebhookPayload payload = (IWebhookPayload) payloadEnvelope.Event.Data.ToObject(dataType, PagerDuty.JsonSerializer)!;
+        payload.Metadata = payloadEnvelope.Event;
+        _logger.LogDebug("Received {eventType} webhook", payload.Metadata.EventType);
+
+        switch (payload) {
+            case PingWebhookPayload p:
+                PingReceived?.Invoke(this, p);
+                break;
+            case IncidentWebhookPayload p:
+                IncidentReceived?.Invoke(this, p);
+                break;
+            case IncidentNoteWebhookPayload p:
+                IncidentNoteReceived?.Invoke(this, p);
+                break;
+            case IncidentConferenceBridgeWebhookPayload p:
+                IncidentConferenceBridgeReceived?.Invoke(this, p);
+                break;
+            case IncidentFieldValuesWebhookPayload p:
+                IncidentFieldValuesReceived?.Invoke(this, p);
+                break;
+            case IncidentStatusUpdateWebhookPayload p:
+                IncidentStatusUpdateReceived?.Invoke(this, p);
+                break;
+            case IncidentResponderWebhookPayload p:
+                IncidentResponderReceived?.Invoke(this, p);
+                break;
+            case IncidentWorkflowInstanceWebhookPayload p:
+                IncidentWorkflowInstanceReceived?.Invoke(this, p);
+                break;
+            case ServiceWebhookPayload p:
+                ServiceReceived?.Invoke(this, p);
+                break;
+        }
+    }
+
+    /// <returns><c>true</c> if the signature is valid, or <c>false</c> if someone is spoofing PagerDuty requests to our server</returns>
+    private bool ValidateSignature(HttpContext context, byte[] requestBody) {
+        IEnumerable<byte[]>? expectedSignatures = context.Request.Headers["X-PagerDuty-Signature"].FirstOrDefault()?.Split(',').Select(s => s.Split('=', 2)).Where(kv => kv[0] == "v1")
+            .Select(kv => Convert.FromHexString(kv[1]));
+        byte[] actualSignature = HMACSHA256.HashData(_pagerDutySecret, requestBody);
+        return expectedSignatures?.Any(expectedSignature => CryptographicOperations.FixedTimeEquals(expectedSignature, actualSignature)) ?? false;
+    }
+
+}

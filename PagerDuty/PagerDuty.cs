@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Pager.Duty.Exceptions;
@@ -27,7 +27,7 @@ public class PagerDuty: IPagerDuty {
         Converters            = { new StringEnumConverter(JsonNamingStrategy, false) }
     };
 
-    private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(JsonSerializerSettings);
+    internal static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(JsonSerializerSettings);
 
     private readonly string           _integrationKey;
     private readonly Lazy<HttpClient> _builtInHttpClient = new(LazyThreadSafetyMode.ExecutionAndPublication);
