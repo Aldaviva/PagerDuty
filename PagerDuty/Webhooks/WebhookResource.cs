@@ -27,7 +27,7 @@ public class WebhookResource {
         [ServiceWebhookPayload.ResourceType]                  = typeof(ServiceWebhookPayload)
     };
 
-    private readonly byte[] _pagerDutySecret;
+    private readonly ICollection<byte[]> _pagerDutySecrets;
 
     private ILogger<WebhookResource>? _logger;
 
@@ -41,16 +41,27 @@ public class WebhookResource {
     public event EventHandler<IncidentWorkflowInstanceWebhookPayload>? IncidentWorkflowInstanceReceived;
     public event EventHandler<ServiceWebhookPayload>? ServiceReceived;
 
-    public WebhookResource(string pagerDutySecret) {
-        _pagerDutySecret = Encoding.ASCII.GetBytes(pagerDutySecret);
+    public WebhookResource(params IEnumerable<string> pagerDutySecrets) {
+        _pagerDutySecrets = pagerDutySecrets.Select(Encoding.ASCII.GetBytes).ToList();
+        if (!_pagerDutySecrets.Any()) {
+            throw new ArgumentException("At least one PagerDuty webhook secret must be supplied", nameof(pagerDutySecrets));
+        }
     }
 
-    // ExceptionAdjustment: M:System.IO.Stream.CopyToAsync(System.IO.Stream) -T:System.NotSupportedException
     public async Task HandlePostRequest(HttpContext httpContext) {
         HttpRequest  req = httpContext.Request;
         HttpResponse res = httpContext.Response;
-        _logger        ??= httpContext.RequestServices.GetRequiredService<ILogger<WebhookResource>>();
-        res.StatusCode =   StatusCodes.Status204NoContent;
+        _logger ??= httpContext.RequestServices.GetRequiredService<ILogger<WebhookResource>>();
+
+        if (!HttpMethods.IsPost(req.Method)) {
+            res.StatusCode = StatusCodes.Status405MethodNotAllowed;
+            return;
+        } else if (!req.HasJsonContentType()) {
+            res.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+            return;
+        } else {
+            res.StatusCode = StatusCodes.Status204NoContent;
+        }
 
         MemoryStream bodyBuffer = new((int) (req.ContentLength ?? 0));
         await httpContext.Request.Body.CopyToAsync(bodyBuffer).ConfigureAwait(false);
@@ -66,7 +77,8 @@ public class WebhookResource {
         using TextReader       streamReader = new StreamReader(bodyBuffer, Encoding.UTF8);
         await using JsonReader jsonReader   = new JsonTextReader(streamReader);
         if (_logger.IsEnabled(LogLevel.Trace)) {
-            _logger.LogTrace("Received event with data {data}", await streamReader.ReadToEndAsync().ConfigureAwait(false));
+            // ReSharper disable once MethodHasAsyncOverload - it's not reading from an async stream, it's reading from a buffered in-memory byte array
+            _logger.LogTrace("Received event with data {data}", streamReader.ReadToEnd());
             bodyBuffer.Position = 0;
         }
 
@@ -119,8 +131,8 @@ public class WebhookResource {
     private bool ValidateSignature(HttpContext context, byte[] requestBody) {
         IEnumerable<byte[]>? expectedSignatures = context.Request.Headers["X-PagerDuty-Signature"].FirstOrDefault()?.Split(',').Select(s => s.Split('=', 2)).Where(kv => kv[0] == "v1")
             .Select(kv => Convert.FromHexString(kv[1]));
-        byte[] actualSignature = HMACSHA256.HashData(_pagerDutySecret, requestBody);
-        return expectedSignatures?.Any(expectedSignature => CryptographicOperations.FixedTimeEquals(expectedSignature, actualSignature)) ?? false;
+        ICollection<byte[]> actualSignatures = _pagerDutySecrets.Select(secret => HMACSHA256.HashData(secret, requestBody)).ToList();
+        return expectedSignatures?.Any(expectedSignature => actualSignatures.Any(actualSignature => CryptographicOperations.FixedTimeEquals(expectedSignature, actualSignature))) ?? false;
     }
 
 }

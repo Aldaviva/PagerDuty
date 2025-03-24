@@ -10,7 +10,7 @@ WebhookResource webhookResource = new(Environment.GetEnvironmentVariable(secretE
     throw new ArgumentNullException(secretEnvVarName, "Missing required PagerDuty webhook secret environment variable"));
 webapp.MapPost("/", webhookResource.HandlePostRequest);
 
-webhookResource.PingReceived += (_, ping) => logger.LogInformation("Received ping with event {event} and message {msg}", ping.EventType, ping.Message);
+webhookResource.PingReceived += (_, ping) => logger.LogInformation("Received {event} with message \"{msg}\"", ping.EventType, ping.Message);
 webhookResource.IncidentReceived += (_, incident) => {
     switch (incident.EventType) {
         case IncidentEventType.Triggered:
