@@ -1,4 +1,4 @@
-﻿namespace Pager.Duty.Responses;
+namespace Pager.Duty.Responses;
 
 /// <summary>
 /// A change has been created or updated.

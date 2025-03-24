@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Pager.Duty;
 using Pager.Duty.Requests;
+using Pager.Duty.Responses;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,28 +21,30 @@ public class Serialization {
 
     [Fact]
     public void SerializeAcknowledgeRequest() {
-        AcknowledgeAlert @event = new("dedupkeyhere") { RoutingKey = "routingkeyhere" };
+        AcknowledgeAlert @event = new(new AlertResponse { DedupKey = "dedupkeyhere" }) { RoutingKey = "routingkeyhere" };
 
-        AssertEquivalentJson(@event, """
-                                     {
-                                       "routing_key": "routingkeyhere",
-                                       "dedup_key": "dedupkeyhere",
-                                       "event_action": "acknowledge"
-                                     }
-                                     """);
+        AssertEquivalentJson(@event,
+            """
+            {
+              "routing_key": "routingkeyhere",
+              "dedup_key": "dedupkeyhere",
+              "event_action": "acknowledge"
+            }
+            """);
     }
 
     [Fact]
     public void SerializeResolveRequest() {
-        ResolveAlert @event = new("dedupkeyhere") { RoutingKey = "routingkeyhere" };
+        ResolveAlert @event = new(new AlertResponse { DedupKey = "dedupkeyhere" }) { RoutingKey = "routingkeyhere" };
 
-        AssertEquivalentJson(@event, """
-                                     {
-                                       "routing_key": "routingkeyhere",
-                                       "dedup_key": "dedupkeyhere",
-                                       "event_action": "resolve"
-                                     }
-                                     """);
+        AssertEquivalentJson(@event,
+            """
+            {
+              "routing_key": "routingkeyhere",
+              "dedup_key": "dedupkeyhere",
+              "event_action": "resolve"
+            }
+            """);
     }
 
     [Fact]
@@ -64,41 +67,42 @@ public class Serialization {
             ClientUrl = "https://monitoring.service.com"
         };
 
-        const string expected = """
-                                {
-                                  "payload": {
-                                    "summary": "Example alert on host1.example.com",
-                                    "timestamp": "2015-07-17T08:42:58.315+00:00",
-                                    "source": "monitoringtool:cloudvendor:central-region-dc-01:852559987:cluster/api-stats-prod-003",
-                                    "severity": "info",
-                                    "component": "postgres",
-                                    "group": "prod-datapipe",
-                                    "class": "deploy",
-                                    "custom_details": {
-                                      "ping time": "1500ms",
-                                      "load avg": 0.75
-                                    }
-                                  },
-                                  "routing_key": "samplekeyhere",
-                                  "dedup_key": "samplekeyhere",
-                                  "images": [
-                                    {
-                                      "src": "https://www.pagerduty.com/wp-content/uploads/2016/05/pagerduty-logo-green.png",
-                                      "href": "https://example.com/",
-                                      "alt": "Example text"
-                                    }
-                                  ],
-                                  "links": [
-                                    {
-                                      "href": "https://example.com/",
-                                      "text": "Link text"
-                                    }
-                                  ],
-                                  "event_action": "trigger",
-                                  "client": "Sample Monitoring Service",
-                                  "client_url": "https://monitoring.service.com"
-                                }
-                                """;
+        const string expected =
+            """
+            {
+              "payload": {
+                "summary": "Example alert on host1.example.com",
+                "timestamp": "2015-07-17T08:42:58.315+00:00",
+                "source": "monitoringtool:cloudvendor:central-region-dc-01:852559987:cluster/api-stats-prod-003",
+                "severity": "info",
+                "component": "postgres",
+                "group": "prod-datapipe",
+                "class": "deploy",
+                "custom_details": {
+                  "ping time": "1500ms",
+                  "load avg": 0.75
+                }
+              },
+              "routing_key": "samplekeyhere",
+              "dedup_key": "samplekeyhere",
+              "images": [
+                {
+                  "src": "https://www.pagerduty.com/wp-content/uploads/2016/05/pagerduty-logo-green.png",
+                  "href": "https://example.com/",
+                  "alt": "Example text"
+                }
+              ],
+              "links": [
+                {
+                  "href": "https://example.com/",
+                  "text": "Link text"
+                }
+              ],
+              "event_action": "trigger",
+              "client": "Sample Monitoring Service",
+              "client_url": "https://monitoring.service.com"
+            }
+            """;
 
         AssertEquivalentJson(@event, expected);
     }
@@ -123,34 +127,35 @@ public class Serialization {
          * Other docs shows "Z" UTC suffix.
          * From testing, the API does successfully parse the +00:00 format, and mostly likely handles all ISO-8601 date+time formats correctly, so I'm not going to try to match the +0000 style.
          */
-        const string expected = """
-                                {
-                                  "links": [
-                                    {
-                                      "href": "https://acme.pagerduty.dev/build/2",
-                                      "text": "View more details in Acme!"
-                                    }
-                                  ],
-                                  "images": [
-                                    {
-                                      "src": "https://www.pagerduty.com/wp-content/uploads/2016/05/pagerduty-logo-green.png",
-                                      "href": "https://example.com/",
-                                      "alt": "Example text"
-                                    }
-                                  ],
-                                  "payload": {
-                                    "summary": "Build Success: Increase snapshot create timeout to 30 seconds",
-                                    "source": "acme-build-pipeline-tool-default-i-9999",
-                                    "timestamp": "2020-07-17T08:42:58.315+00:00",
-                                    "custom_details": {
-                                      "build_state": "passed",
-                                      "build_number": "2",
-                                      "run_time": "1236s"
-                                    }
-                                  },
-                                  "routing_key": "samplekeyhere"
-                                }
-                                """;
+        const string expected =
+            """
+            {
+              "links": [
+                {
+                  "href": "https://acme.pagerduty.dev/build/2",
+                  "text": "View more details in Acme!"
+                }
+              ],
+              "images": [
+                {
+                  "src": "https://www.pagerduty.com/wp-content/uploads/2016/05/pagerduty-logo-green.png",
+                  "href": "https://example.com/",
+                  "alt": "Example text"
+                }
+              ],
+              "payload": {
+                "summary": "Build Success: Increase snapshot create timeout to 30 seconds",
+                "source": "acme-build-pipeline-tool-default-i-9999",
+                "timestamp": "2020-07-17T08:42:58.315+00:00",
+                "custom_details": {
+                  "build_state": "passed",
+                  "build_number": "2",
+                  "run_time": "1236s"
+                }
+              },
+              "routing_key": "samplekeyhere"
+            }
+            """;
 
         AssertEquivalentJson(@event, expected);
     }
@@ -169,8 +174,8 @@ public class Serialization {
     private void AssertEquivalentJson(object actual, string expected) {
         JObject actualJson   = JObject.FromObject(actual, _jsonSerializer);
         JToken  expectedJson = JToken.Parse(expected);
-        JToken.DeepEquals(actualJson, expectedJson)
-            .Should().BeTrue("actual {0} should be equivalent to expected {1}", JsonConvert.SerializeObject(actual, _jsonSettings), expectedJson);
+        JToken.DeepEquals(actualJson, expectedJson).Should()
+            .BeTrue("actual {0} should be equivalent to expected {1}", JsonConvert.SerializeObject(actual, _jsonSettings), expectedJson);
     }
 
 }

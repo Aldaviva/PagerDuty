@@ -1,4 +1,4 @@
-﻿using Pager.Duty;
+using Pager.Duty;
 using Pager.Duty.Exceptions;
 using Pager.Duty.Requests;
 using Pager.Duty.Responses;
@@ -13,7 +13,8 @@ namespace Tests;
 
 public class PagerDutyTest {
 
-    private          PagerDuty              _pagerDuty          = new("123");
+    private PagerDuty _pagerDuty = new("123");
+
     private readonly FakeHttpMessageHandler _httpMessageHandler = A.Fake<FakeHttpMessageHandler>();
     private readonly HttpClient             _httpClient;
 
@@ -28,13 +29,14 @@ public class PagerDutyTest {
 
         A.CallTo(() => _httpMessageHandler.SendAsync(An<HttpRequestMessage>._)).Returns(
             new HttpResponseMessage(HttpStatusCode.Accepted) {
-                Content = new StringContent("""
-                                            {
-                                              "status": "success",
-                                              "message": "Event processed",
-                                              "dedup_key": "abc"
-                                            }
-                                            """)
+                Content = new StringContent(
+                    """
+                    {
+                      "status": "success",
+                      "message": "Event processed",
+                      "dedup_key": "abc"
+                    }
+                    """)
             });
 
         AlertResponse alertResponse = await _pagerDuty.Send(alert);
@@ -44,13 +46,14 @@ public class PagerDutyTest {
         alertResponse.Status.Should().Be("success");
         alertResponse.IsSuccessful.Should().BeTrue();
 
-        const string expectedJsonBody = """
-                                        {
-                                          "routing_key": "123",
-                                          "dedup_key": "abc",
-                                          "event_action": "resolve"
-                                        }
-                                        """;
+        const string expectedJsonBody =
+            """
+            {
+              "routing_key": "123",
+              "dedup_key": "abc",
+              "event_action": "resolve"
+            }
+            """;
 
         A.CallTo(() => _httpMessageHandler.SendAsync(An<HttpRequestMessage>.That.Matches(
             HttpMethod.Post, "https://events.pagerduty.com/v2/enqueue", expectedJsonBody)
@@ -63,12 +66,13 @@ public class PagerDutyTest {
 
         A.CallTo(() => _httpMessageHandler.SendAsync(An<HttpRequestMessage>._)).Returns(
             new HttpResponseMessage(HttpStatusCode.Accepted) {
-                Content = new StringContent("""
-                                            {
-                                              "status": "success",
-                                              "message": "Change event processed"
-                                            }
-                                            """)
+                Content = new StringContent(
+                    """
+                    {
+                      "status": "success",
+                      "message": "Change event processed"
+                    }
+                    """)
             });
 
         ChangeResponse changeResponse = await _pagerDuty.Send(change);
@@ -76,17 +80,18 @@ public class PagerDutyTest {
         changeResponse.Message.Should().Be("Change event processed");
         changeResponse.Status.Should().Be("success");
 
-        const string expectedJsonBody = """
-                                        {
-                                          "routing_key": "123",
-                                          "payload": {
-                                            "summary": "my change",
-                                            "source": "my source"
-                                          },
-                                          "links": [],
-                                          "images": []
-                                        }
-                                        """;
+        const string expectedJsonBody =
+            """
+            {
+              "routing_key": "123",
+              "payload": {
+                "summary": "my change",
+                "source": "my source"
+              },
+              "links": [],
+              "images": []
+            }
+            """;
 
         A.CallTo(() => _httpMessageHandler.SendAsync(An<HttpRequestMessage>.That.Matches(
             HttpMethod.Post, "https://events.pagerduty.com/v2/change/enqueue", expectedJsonBody)

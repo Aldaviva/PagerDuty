@@ -1,4 +1,4 @@
-﻿// ReSharper disable UnusedMemberInSuper.Global - meant to be used by library consumers
+// ReSharper disable UnusedMemberInSuper.Global - meant to be used by library consumers
 
 using Pager.Duty.Exceptions;
 using Pager.Duty.Requests;

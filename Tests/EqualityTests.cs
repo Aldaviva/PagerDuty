@@ -1,4 +1,4 @@
-﻿using Pager.Duty.Requests;
+using Pager.Duty.Requests;
 
 namespace Tests;
 

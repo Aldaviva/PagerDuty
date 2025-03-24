@@ -1,12 +1,15 @@
-﻿using Pager.Duty;
+using Pager.Duty;
 using Pager.Duty.Exceptions;
 using Pager.Duty.Requests;
+using Pager.Duty.Responses;
 
 using IPagerDuty pagerDuty = new PagerDuty(integrationKey: "77b876d00b6c4e0dc0fadc3062f8c1a6");
 
 try {
 
-    await pagerDuty.Send(new TriggerAlert(Severity.Info, "Something happened"));
+    AlertResponse alert = await pagerDuty.Send(new TriggerAlert(Severity.Info, "Something happened"));
+    await pagerDuty.Send(new AcknowledgeAlert(alert));
+    await pagerDuty.Send(new ResolveAlert(alert));
 
     Console.WriteLine("Done");
 

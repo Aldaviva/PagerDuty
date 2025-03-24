@@ -1,4 +1,4 @@
-﻿// ReSharper disable UnusedAutoPropertyAccessor.Global - read by library consumers
+// ReSharper disable UnusedAutoPropertyAccessor.Global - read by library consumers
 
 using System;
 

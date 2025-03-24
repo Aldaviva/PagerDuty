@@ -1,4 +1,4 @@
-﻿namespace Pager.Duty.Requests;
+namespace Pager.Duty.Requests;
 
 internal enum EventAction {
 

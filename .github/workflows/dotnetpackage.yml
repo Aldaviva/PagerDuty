@@ -27,6 +27,9 @@ jobs:
 
     - name: Build
       run: dotnet build --no-restore --configuration Release
+      
+    - name: Pack
+      run: dotnet pack ${{ env.ProjectName }} --no-build --configuration Release
 
     - name: Test
       run: |
@@ -39,15 +42,12 @@ jobs:
       run: testspace Tests/TestResults/*.trx
 
     - name: Upload coverage
-      uses: coverallsapp/github-action@v2
+      uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Stop if tests failed
       run: exit $env:TEST_EXIT_CODE
-
-    - name: Pack
-      run: dotnet pack ${{ env.ProjectName }} --no-build --configuration Release
 
     - name: Upload package
       uses: actions/upload-artifact@v4

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Pager.Duty.Responses;
 
 namespace Pager.Duty.Requests;

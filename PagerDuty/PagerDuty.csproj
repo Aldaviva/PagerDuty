@@ -12,14 +12,14 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>1701,1702,IDE0290</NoWarn>
 
-        <Version>1.1.2</Version>
+        <Version>1.1.3</Version>
         <Title>PagerDuty</Title>
         <PackageId>PagerDuty</PackageId>
         <Product>PagerDuty</Product>
         <Description>Trigger, acknowledge, and resolve Alerts and create Changes using the PagerDuty Events API V2.</Description>
         <Authors>Ben Hutchison</Authors>
-        <Company>Ben Hutchison</Company>
-        <Copyright>© 2024 Ben Hutchison</Copyright>
+        <Company>$(Authors)</Company>
+        <Copyright>© 2025 $(Authors)</Copyright>
         <RepositoryUrl>https://github.com/Aldaviva/PagerDuty.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>pagerduty</PackageTags>
