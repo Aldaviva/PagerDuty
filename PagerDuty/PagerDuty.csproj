@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;net452;net6.0</TargetFrameworks>
@@ -12,7 +12,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn),IDE0290</NoWarn>
 
-        <Version>1.2.0-beta1</Version>
+        <Version>1.2.0-beta2</Version>
         <Title>PagerDuty</Title>
         <PackageId>PagerDuty</PackageId>
         <Product>PagerDuty</Product>

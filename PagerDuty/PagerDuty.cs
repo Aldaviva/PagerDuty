@@ -17,8 +17,8 @@ namespace Pager.Duty;
 /// <inheritdoc />
 public class PagerDuty: IPagerDuty {
 
-    private static readonly NamingStrategy JsonNamingStrategy = new SnakeCaseNamingStrategy(false, false);
-    private static readonly Encoding       Utf8               = new UTF8Encoding(false, true);
+    private static readonly  NamingStrategy JsonNamingStrategy = new SnakeCaseNamingStrategy(false, false);
+    internal static readonly Encoding       Utf8               = new UTF8Encoding(false, true);
 
     internal static readonly JsonSerializerSettings JsonSerializerSettings = new() {
         MissingMemberHandling = MissingMemberHandling.Ignore,

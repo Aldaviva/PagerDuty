@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Pager.Duty.Webhooks.Requests;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Pager.Duty.Webhooks;
@@ -42,9 +42,9 @@ public class WebhookResource {
     public event EventHandler<ServiceWebhookPayload>? ServiceReceived;
 
     public WebhookResource(params IEnumerable<string> pagerDutySecrets) {
-        _pagerDutySecrets = pagerDutySecrets.Select(Encoding.ASCII.GetBytes).ToList();
+        _pagerDutySecrets = pagerDutySecrets.Select(PagerDuty.Utf8.GetBytes).ToList();
         if (!_pagerDutySecrets.Any()) {
-            throw new ArgumentException("At least one PagerDuty webhook secret must be supplied", nameof(pagerDutySecrets));
+            throw new ArgumentOutOfRangeException(nameof(pagerDutySecrets), pagerDutySecrets, "At least one PagerDuty webhook secret must be supplied");
         }
     }
 
@@ -69,16 +69,16 @@ public class WebhookResource {
         byte[] body = bodyBuffer.ToArray();
 
         if (!ValidateSignature(httpContext, body)) {
-            res.StatusCode = StatusCodes.Status403Forbidden;
             _logger.LogWarning("Invalid signature, ignoring webhook that was spoofing PagerDuty");
+            res.StatusCode = StatusCodes.Status403Forbidden;
             return;
         }
 
-        using TextReader       streamReader = new StreamReader(bodyBuffer, Encoding.UTF8);
+        using TextReader       streamReader = new StreamReader(bodyBuffer, PagerDuty.Utf8);
         await using JsonReader jsonReader   = new JsonTextReader(streamReader);
         if (_logger.IsEnabled(LogLevel.Trace)) {
             // ReSharper disable once MethodHasAsyncOverload - it's not reading from an async stream, it's reading from a buffered in-memory byte array
-            _logger.LogTrace("Received event with data {data}", streamReader.ReadToEnd());
+            _logger.LogTrace("Received request with body {data}", streamReader.ReadToEnd());
             bodyBuffer.Position = 0;
         }
 
@@ -93,7 +93,8 @@ public class WebhookResource {
         }
 
         IWebhookPayload payload = (IWebhookPayload) payloadEnvelope.Event.Data.ToObject(dataType, PagerDuty.JsonSerializer)!;
-        payload.Metadata = payloadEnvelope.Event;
+        payload.Metadata           = payloadEnvelope.Event;
+        payloadEnvelope.Event.Data = JValue.CreateNull();
         _logger.LogDebug("Received {eventType} webhook", payload.Metadata.EventType);
 
         switch (payload) {
@@ -129,10 +130,20 @@ public class WebhookResource {
 
     /// <returns><c>true</c> if the signature is valid, or <c>false</c> if someone is spoofing PagerDuty requests to our server</returns>
     private bool ValidateSignature(HttpContext context, byte[] requestBody) {
-        IEnumerable<byte[]>? expectedSignatures = context.Request.Headers["X-PagerDuty-Signature"].FirstOrDefault()?.Split(',').Select(s => s.Split('=', 2)).Where(kv => kv[0] == "v1")
+        IEnumerable<byte[]>? providedSignatures = context.Request.Headers["X-PagerDuty-Signature"].FirstOrDefault()?.Split(',').Select(s => s.Split('=', 2)).Where(kv => kv[0] == "v1")
             .Select(kv => Convert.FromHexString(kv[1]));
-        ICollection<byte[]> actualSignatures = _pagerDutySecrets.Select(secret => HMACSHA256.HashData(secret, requestBody)).ToList();
-        return expectedSignatures?.Any(expectedSignature => actualSignatures.Any(actualSignature => CryptographicOperations.FixedTimeEquals(expectedSignature, actualSignature))) ?? false;
+        ICollection<byte[]> desiredSignatures = _pagerDutySecrets.Select(secret => HMACSHA256.HashData(secret, requestBody)).ToList();
+        return providedSignatures?.Intersect(desiredSignatures, FixedTimeEqualityComparer.Instance).Any() ?? false;
     }
+
+}
+
+internal class FixedTimeEqualityComparer: IEqualityComparer<byte[]> {
+
+    public static readonly FixedTimeEqualityComparer Instance = new();
+
+    public bool Equals(byte[]? x, byte[]? y) => CryptographicOperations.FixedTimeEquals(x, y);
+
+    public int GetHashCode(byte[] obj) => obj.GetHashCode();
 
 }
