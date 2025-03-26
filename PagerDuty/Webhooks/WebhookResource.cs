@@ -130,20 +130,11 @@ public class WebhookResource {
 
     /// <returns><c>true</c> if the signature is valid, or <c>false</c> if someone is spoofing PagerDuty requests to our server</returns>
     private bool ValidateSignature(HttpContext context, byte[] requestBody) {
-        IEnumerable<byte[]>? providedSignatures = context.Request.Headers["X-PagerDuty-Signature"].FirstOrDefault()?.Split(',').Select(s => s.Split('=', 2)).Where(kv => kv[0] == "v1")
+        IEnumerable<byte[]>? offeredSignatures = context.Request.Headers["X-PagerDuty-Signature"].FirstOrDefault()?.Split(',').Select(s => s.Split('=', 2)).Where(kv => kv[0] == "v1")
             .Select(kv => Convert.FromHexString(kv[1]));
         ICollection<byte[]> desiredSignatures = _pagerDutySecrets.Select(secret => HMACSHA256.HashData(secret, requestBody)).ToList();
-        return providedSignatures?.Intersect(desiredSignatures, FixedTimeEqualityComparer.Instance).Any() ?? false;
+        // Can't use Intersect with an IEqualityComparer because that uses the hashcode, not pair-wise comparisons, so it can't use FixedTimeEquals
+        return offeredSignatures?.Any(offeredSignature => desiredSignatures.Any(desiredSignature => CryptographicOperations.FixedTimeEquals(offeredSignature, desiredSignature))) ?? false;
     }
-
-}
-
-internal class FixedTimeEqualityComparer: IEqualityComparer<byte[]> {
-
-    public static readonly FixedTimeEqualityComparer Instance = new();
-
-    public bool Equals(byte[]? x, byte[]? y) => CryptographicOperations.FixedTimeEquals(x, y);
-
-    public int GetHashCode(byte[] obj) => obj.GetHashCode();
 
 }
