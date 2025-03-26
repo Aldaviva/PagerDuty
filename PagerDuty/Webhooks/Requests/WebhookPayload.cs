@@ -237,7 +237,8 @@ public enum ReferenceType {
     TeamReference,
     PriorityReference,
     IncidentWorkflowReference,
-    WorkflowTriggerReference
+    WorkflowTriggerReference,
+    InboundIntegrationReference
 
 }
 
