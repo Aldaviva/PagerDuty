@@ -2,8 +2,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
-
 namespace Pager.Duty.Webhooks.Requests;
 
 public class IncidentWebhookPayload: AbstractWebhookPayload<IncidentEventType> {
@@ -27,7 +25,7 @@ public class IncidentWebhookPayload: AbstractWebhookPayload<IncidentEventType> {
     public ICollection<PagerDutyReference> Assignees { get; } = [];
     public PagerDutyReference EscalationPolicy { get; set; } = null!;
     public ICollection<PagerDutyReference> Teams { get; } = [];
-    public PagerDutyReference Priority { get; set; } = null!;
+    public PagerDutyReference? Priority { get; set; } = null!;
     [JsonProperty("urgency")] internal string Urgency { get; set; } = null!;
     [JsonIgnore] public bool HighUrgency {
         get => Urgency == "high";

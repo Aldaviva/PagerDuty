@@ -10,7 +10,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn),IDE0290</NoWarn>
+        <NoWarn>$(NoWarn);IDE0290;CS8509</NoWarn>
 
         <Version>1.2.0-beta3</Version>
         <Title>PagerDuty</Title>

@@ -1,10 +1,8 @@
-#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
-
 namespace Pager.Duty.Webhooks.Requests;
 
 public class PingWebhookPayload: AbstractWebhookPayload<PingEventType> {
 
-    public const string ResourceType = "pagey";
+    public const string ResourceType = "ping";
 
     public string Message { get; set; } = null!;
 

@@ -13,7 +13,25 @@ using System.Threading.Tasks;
 
 namespace Pager.Duty.Webhooks;
 
-public class WebhookResource {
+public interface IWebhookResource {
+
+    event EventHandler<PingWebhookPayload>? PingReceived;
+    event EventHandler<IncidentWebhookPayload>? IncidentReceived;
+    event EventHandler<IncidentNoteWebhookPayload>? IncidentNoteReceived;
+    event EventHandler<IncidentConferenceBridgeWebhookPayload>? IncidentConferenceBridgeReceived;
+    event EventHandler<IncidentFieldValuesWebhookPayload>? IncidentFieldValuesReceived;
+    event EventHandler<IncidentStatusUpdateWebhookPayload>? IncidentStatusUpdateReceived;
+    event EventHandler<IncidentResponderWebhookPayload>? IncidentResponderReceived;
+    event EventHandler<IncidentWorkflowInstanceWebhookPayload>? IncidentWorkflowInstanceReceived;
+    event EventHandler<ServiceWebhookPayload>? ServiceReceived;
+
+    Task HandlePostRequest(HttpContext httpContext);
+
+}
+
+public class WebhookResource: IWebhookResource {
+
+    private const string SignatureVersion = "v1";
 
     private static readonly IReadOnlyDictionary<string, Type> PayloadTypes = new Dictionary<string, Type> {
         [PingWebhookPayload.ResourceType]                     = typeof(PingWebhookPayload),
@@ -87,8 +105,8 @@ public class WebhookResource {
             return;
         }
 
-        if (!PayloadTypes.TryGetValue(payloadEnvelope.Event.ResourceType, out Type? dataType)) {
-            _logger.LogWarning("Unrecognized resource type {type} received in PagerDuty webhook, ignoring", payloadEnvelope.Event.ResourceType);
+        if (!(payloadEnvelope.Event.Data["type"]?.Value<string>() is { } dataTypeName && PayloadTypes.TryGetValue(dataTypeName, out Type? dataType))) {
+            _logger.LogWarning("Unrecognized data type {type} received in PagerDuty webhook, ignoring", payloadEnvelope.Event.ResourceType);
             return;
         }
 
@@ -132,7 +150,16 @@ public class WebhookResource {
     private bool ValidateSignature(HttpContext context, byte[] requestBody) {
         IEnumerable<byte[]>? offeredSignatures = context.Request.Headers["X-PagerDuty-Signature"].FirstOrDefault()?.Split(',').Select(s => s.Split('=', 2)).Where(kv => kv[0] == "v1")
             .Select(kv => Convert.FromHexString(kv[1]));
+        /*
+         * .Select(kv => {
+                _logger?.LogTrace("Incoming request signature {sig}", kv[1]);
+                return Convert.FromHexString(kv[1]);
+            })
+            .ToList();
+         */
+
         ICollection<byte[]> desiredSignatures = _pagerDutySecrets.Select(secret => HMACSHA256.HashData(secret, requestBody)).ToList();
+
         // Can't use Intersect with an IEqualityComparer because that uses the hashcode, not pair-wise comparisons, so it can't use FixedTimeEquals
         return offeredSignatures?.Any(offeredSignature => desiredSignatures.Any(desiredSignature => CryptographicOperations.FixedTimeEquals(offeredSignature, desiredSignature))) ?? false;
     }
