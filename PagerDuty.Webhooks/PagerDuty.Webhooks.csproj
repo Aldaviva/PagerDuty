@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
-        <RootNamespace>Pager.Duty</RootNamespace>
+        <TargetFramework>net6.0</TargetFramework>
+        <RootNamespace>Pager.Duty.Webhooks</RootNamespace>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <IncludeSource>true</IncludeSource>
@@ -13,16 +13,16 @@
         <NoWarn>$(NoWarn);IDE0290;CS8509</NoWarn>
 
         <Version>1.2.0-beta4</Version>
-        <Title>PagerDuty</Title>
-        <PackageId>PagerDuty</PackageId>
-        <Product>PagerDuty</Product>
-        <Description>Trigger, acknowledge, and resolve Alerts and create Changes using the PagerDuty Events API V2.</Description>
+        <Title>PagerDuty.Webhooks</Title>
+        <PackageId>PagerDuty.Webhooks</PackageId>
+        <Product>PagerDuty.Webhooks</Product>
+        <Description>Receive PagerDuty incident updates by receiving Webhooks V3 requests using ASP.NET Core.</Description>
         <Authors>Ben Hutchison</Authors>
         <Company>$(Authors)</Company>
         <Copyright>© 2025 $(Authors)</Copyright>
         <RepositoryUrl>https://github.com/Aldaviva/PagerDuty.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>pagerduty</PackageTags>
+        <PackageTags>pagerduty webhook</PackageTags>
         <PackageProjectUrl>https://github.com/Aldaviva/PagerDuty</PackageProjectUrl>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageIcon>icon.png</PackageIcon>
@@ -32,20 +32,32 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="ExceptionAdjustments.txt" />
-        <InternalsVisibleTo Include="PagerDuty.Webhooks;Tests;Tests.Webhooks" />
-        <None Include="icon.png;..\Readme.md" Pack="true" PackagePath="\" />
+        <AdditionalFiles Include="..\PagerDuty\ExceptionAdjustments.txt" />
+        <InternalsVisibleTo Include="Tests;Test.Webhooks" />
+        <None Include="..\PagerDuty\icon.png;..\Readme.md" Pack="true" PackagePath="\" />
         <None Include="..\.github*\**" Visible="true" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
     
-    <ItemGroup Condition="$(TargetFramework) == 'net452'">
-        <Reference Include="System.Net.Http" />
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
+    
+    <Choose>
+        <When Condition="'$(Configuration)' == 'Release'">
+            <ItemGroup>
+                <PackageReference Include="PagerDuty" Version="1.2.0-beta4" />
+            </ItemGroup>
+        </When>
+        <Otherwise>
+            <ItemGroup>
+                <ProjectReference Include="..\PagerDuty\PagerDuty.csproj" />
+            </ItemGroup>
+        </Otherwise>
+    </Choose>
 
     <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(Configuration)' == 'Release'">
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>

@@ -211,7 +211,7 @@ pagerDuty.Dispose();
 
 ## Webhooks
 
-This library provides a server-side HTTP resource which receives [Webhook V3](https://developer.pagerduty.com/docs/webhooks-overview) requests from PagerDuty. This allows PagerDuty to immediately push a notification to your server when an event occurs, like an incident being triggered or resolved. This is a reusable route handler for ASP.NET Core ≥ 8 web application servers.
+This project provides a library for a server-side HTTP resource which receives [Webhook V3](https://developer.pagerduty.com/docs/webhooks-overview) requests from PagerDuty. This allows PagerDuty to immediately push a notification to your server when an event occurs, like an incident being triggered or resolved. This is a reusable route handler for ASP.NET Core ≥ 8 web application servers.
 
 ### Configuration
 
@@ -220,7 +220,7 @@ This library provides a server-side HTTP resource which receives [Webhook V3](ht
     1. Go to **Integrations › Generic Webhooks (v3)**.
     1. Click **+ New Webhook**.
     1. Specify the absolute URL of the route you're defining in your HTTP server
-        - The scheme must be either `https:` (certificate must be valid and CA must be in Mozilla's trusted root list) or `http:`
+        - The scheme must be either `https:` (certificate must be valid and CA must be in Mozilla's trusted root store) or `http:`
         - The port is optional, and the default value for the scheme will be used if omitted
         - Example: `https://myserver.mydomain.com:8443/pagerduty`
     1. Choose whether events should be fired for all Services in your account, or just one Service.
@@ -233,7 +233,7 @@ This library provides a server-side HTTP resource which receives [Webhook V3](ht
 
     IWebhookResource webhookResource = new WebhookResource(pagerDutySecrets: "1yo7GugPm02PTHj6t34vcrZIxc9oLLVNWpk/qegNNg6I92ruxyElaklrHnw+z1gc");
     ```
-    If you have multiple webhooks pointing to the same server, you can pass multiple signing secrets in an enumerable or array.
+    If you have multiple Webhooks pointing to the same server, you can pass multiple signing secrets in an enumerable or array.
 
 ### Usage
 1. Create an ASP.NET Core web application.
@@ -246,7 +246,12 @@ This library provides a server-side HTTP resource which receives [Webhook V3](ht
 
     await webapp.RunAsync();
     ```
-    If these types can't be found, ensure your `.csproj` root element's `sdk` attribute value is `Microsoft.NET.Sdk.Web`.
+    If these types can't be found, set your `.csproj` root element's `sdk` attribute value to `Microsoft.NET.Sdk.Web`.
+1. Install PagerDuty libraries.
+    ```sh
+    dotnet add package PagerDuty
+    dotnet add package PagerDuty.Webhooks
+    ```
 1. Add a route to your server that uses the webhook resource's handler function.
     ```cs
     webapp.MapPost("/pagerduty", webhookResource.HandlePostRequest);
@@ -254,12 +259,13 @@ This library provides a server-side HTTP resource which receives [Webhook V3](ht
     This resource must be served with the path you specified when creating the webhook URL in PagerDuty in [Configuration](#configuration-1), and the HTTP verb must be `POST`.
 1. Subscribe to events on the webhook resource to be notified when requests are received.
     ```cs
-    webhookResource.PingReceived += (sender, ping) => Console.WriteLine("Ping webhook request received from PagerDuty");
+    webhookResource.PingReceived += (sender, ping) => 
+        Console.WriteLine("Ping webhook request received from PagerDuty");
 
     webhookResource.IncidentReceived += (sender, incident) =>
         Console.WriteLine($"#{incident.IncidentNumber} {incident.EventType}: {incident.Title} is now {incident.Status}");
     ```
-1. [Run your web application in servers like IIS and Kestrel.](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/?view=aspnetcore-8.0&tabs=windows)
+1. [Run your web application in a server like IIS or Kestrel.](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/?view=aspnetcore-8.0&tabs=windows)
 
 #### Events
 The following [events](https://developer.pagerduty.com/docs/webhooks-overview#event-types) are available, corresponding to the thing that changed (subject).

@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Pager.Duty.Webhooks.Requests;
 
@@ -21,7 +22,7 @@ public abstract class AbstractWebhookPayload<T>: IWebhookPayload<T> where T: Enu
 
     public WebhookPayloadMetadata Metadata { get; set; } = null!;
     public abstract T EventType { get; }
-    protected ReadOnlySpan<char> EventTypeSuffix => Metadata.EventType.AsSpan(Metadata.EventType.IndexOf('.') + 1);
+    protected string EventTypeSuffix => Metadata.EventType.Substring(Metadata.EventType.IndexOf('.') + 1);
 
 }
 
@@ -34,7 +35,7 @@ internal class WebhookPayloadEnvelope {
 public class WebhookPayloadMetadata {
 
     public string Id { get; set; } = null!;
-    [JsonProperty] internal string EventType { get; set; } = null!;
+    [EditorBrowsable(EditorBrowsableState.Never)] public string EventType { get; set; } = null!;
     public string ResourceType { get; set; } = null!;
     public DateTimeOffset OccurredAt { get; set; }
     public PagerDutyReference? Agent { get; set; }

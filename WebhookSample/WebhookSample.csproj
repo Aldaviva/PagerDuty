@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\PagerDuty\PagerDuty.csproj" />
+        <ProjectReference Include="..\PagerDuty.Webhooks\PagerDuty.Webhooks.csproj" />
     </ItemGroup>
 
 </Project>

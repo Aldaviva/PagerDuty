@@ -9,29 +9,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Pager.Duty.Webhooks;
 
-public interface IWebhookResource {
-
-    event EventHandler<PingWebhookPayload>? PingReceived;
-    event EventHandler<IncidentWebhookPayload>? IncidentReceived;
-    event EventHandler<IncidentNoteWebhookPayload>? IncidentNoteReceived;
-    event EventHandler<IncidentConferenceBridgeWebhookPayload>? IncidentConferenceBridgeReceived;
-    event EventHandler<IncidentFieldValuesWebhookPayload>? IncidentFieldValuesReceived;
-    event EventHandler<IncidentStatusUpdateWebhookPayload>? IncidentStatusUpdateReceived;
-    event EventHandler<IncidentResponderWebhookPayload>? IncidentResponderReceived;
-    event EventHandler<IncidentWorkflowInstanceWebhookPayload>? IncidentWorkflowInstanceReceived;
-    event EventHandler<ServiceWebhookPayload>? ServiceReceived;
-
-    Task HandlePostRequest(HttpContext httpContext);
-
-}
-
 public class WebhookResource: IWebhookResource {
 
     private const string SignatureVersion = "v1";
+
+    private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
 
     private static readonly IReadOnlyDictionary<string, Type> PayloadTypes = new Dictionary<string, Type> {
         [PingWebhookPayload.ResourceType]                     = typeof(PingWebhookPayload),
@@ -59,8 +46,9 @@ public class WebhookResource: IWebhookResource {
     public event EventHandler<IncidentWorkflowInstanceWebhookPayload>? IncidentWorkflowInstanceReceived;
     public event EventHandler<ServiceWebhookPayload>? ServiceReceived;
 
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="pagerDutySecrets"/> is empty</exception>
     public WebhookResource(params IEnumerable<string> pagerDutySecrets) {
-        _pagerDutySecrets = pagerDutySecrets.Select(PagerDuty.Utf8.GetBytes).ToList();
+        _pagerDutySecrets = pagerDutySecrets.Select(Utf8.GetBytes).ToList();
         if (!_pagerDutySecrets.Any()) {
             throw new ArgumentOutOfRangeException(nameof(pagerDutySecrets), pagerDutySecrets, "At least one PagerDuty webhook secret must be supplied");
         }
@@ -92,7 +80,7 @@ public class WebhookResource: IWebhookResource {
             return;
         }
 
-        using TextReader       streamReader = new StreamReader(bodyBuffer, PagerDuty.Utf8);
+        using TextReader       streamReader = new StreamReader(bodyBuffer, Utf8);
         await using JsonReader jsonReader   = new JsonTextReader(streamReader);
         if (_logger.IsEnabled(LogLevel.Trace)) {
             // ReSharper disable once MethodHasAsyncOverload - it's not reading from an async stream, it's reading from a buffered in-memory byte array
@@ -148,15 +136,8 @@ public class WebhookResource: IWebhookResource {
 
     /// <returns><c>true</c> if the signature is valid, or <c>false</c> if someone is spoofing PagerDuty requests to our server</returns>
     private bool ValidateSignature(HttpContext context, byte[] requestBody) {
-        IEnumerable<byte[]>? offeredSignatures = context.Request.Headers["X-PagerDuty-Signature"].FirstOrDefault()?.Split(',').Select(s => s.Split('=', 2)).Where(kv => kv[0] == "v1")
+        IEnumerable<byte[]>? offeredSignatures = context.Request.Headers["X-PagerDuty-Signature"].FirstOrDefault()?.Split(',').Select(s => s.Split('=', 2)).Where(kv => kv[0] == SignatureVersion)
             .Select(kv => Convert.FromHexString(kv[1]));
-        /*
-         * .Select(kv => {
-                _logger?.LogTrace("Incoming request signature {sig}", kv[1]);
-                return Convert.FromHexString(kv[1]);
-            })
-            .ToList();
-         */
 
         ICollection<byte[]> desiredSignatures = _pagerDutySecrets.Select(secret => HMACSHA256.HashData(secret, requestBody)).ToList();
 

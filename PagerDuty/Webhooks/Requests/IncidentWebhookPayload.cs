@@ -16,7 +16,7 @@ public class IncidentWebhookPayload: AbstractWebhookPayload<IncidentEventType> {
     public string IncidentKey { get; set; } = null!;
     public DateTimeOffset CreatedAt { get; set; }
     public string Title { get; set; } = null!;
-    [JsonProperty("incident_type")] internal IncidentTypeWrapper IncidentTypeWrapper { get; set; } = null!;
+    [JsonProperty("incident_type")] internal IncidentTypeWrapper IncidentTypeWrapper { get; set; } = new();
     [JsonIgnore] public string IncidentType {
         get => IncidentTypeWrapper.Name;
         set => IncidentTypeWrapper.Name = value;
