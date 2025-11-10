@@ -1,4 +1,4 @@
-﻿using FluentAssertions.Events;
+using FluentAssertions.Events;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -6,13 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Pager.Duty.Webhooks;
 using Pager.Duty.Webhooks.Requests;
-using System;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Tests.Webhooks;
 
@@ -88,6 +84,7 @@ public class WebhookResourceTests: IAsyncDisposable {
         actual.Metadata.EventType.Should().Be("incident.triggered");
         actual.Metadata.Agent!.Self.Should().Be(new Uri("https://api.pagerduty.com/users/PVE0ZR9"));
         actual.Metadata.Agent.HtmlUrl.Should().Be(new Uri("https://aldaviva.pagerduty.com/users/PVE0ZR9"));
+        actual.Metadata.Agent.AccountSubdomain.Should().Be("aldaviva");
         actual.Metadata.Agent.Id.Should().Be("PVE0ZR9");
         actual.Metadata.Agent.Summary.Should().Be("Ben");
         actual.Metadata.Agent.Type.Should().Be(ReferenceType.UserReference);
@@ -97,6 +94,7 @@ public class WebhookResourceTests: IAsyncDisposable {
         actual.Metadata.ResourceType.Should().Be("incident");
         actual.Assignees.Single().Self.Should().Be(new Uri("https://api.pagerduty.com/users/PVE0ZR9"));
         actual.Assignees.Single().HtmlUrl.Should().Be(new Uri("https://aldaviva.pagerduty.com/users/PVE0ZR9"));
+        actual.Assignees.Single().AccountSubdomain.Should().Be("aldaviva");
         actual.Assignees.Single().Id.Should().Be("PVE0ZR9");
         actual.Assignees.Single().Summary.Should().Be("Ben");
         actual.Assignees.Single().Type.Should().Be(ReferenceType.UserReference);
@@ -104,10 +102,12 @@ public class WebhookResourceTests: IAsyncDisposable {
         actual.CreatedAt.Should().Be(new DateTimeOffset(2025, 4, 7, 3, 47, 13, TimeSpan.Zero));
         actual.EscalationPolicy.Summary.Should().Be("Notify Ben and Dad");
         actual.EscalationPolicy.HtmlUrl.Should().Be(new Uri("https://aldaviva.pagerduty.com/escalation_policies/P482651"));
+        actual.EscalationPolicy.AccountSubdomain.Should().Be("aldaviva");
         actual.EscalationPolicy.Id.Should().Be("P482651");
         actual.EscalationPolicy.Self.Should().Be(new Uri("https://api.pagerduty.com/escalation_policies/P482651"));
         actual.EscalationPolicy.Type.Should().Be(ReferenceType.EscalationPolicyReference);
         actual.HtmlUrl.Should().Be(new Uri("https://aldaviva.pagerduty.com/incidents/Q2CKYRLH85UNN4"));
+        actual.AccountSubdomain.Should().Be("aldaviva");
         actual.Id.Should().Be("Q2CKYRLH85UNN4");
         actual.IncidentKey.Should().Be("dfead9d88e0649e8b7dee514b1875756");
         actual.IncidentType.Should().Be("incident_default");
@@ -116,6 +116,7 @@ public class WebhookResourceTests: IAsyncDisposable {
         actual.Self.Should().Be(new Uri("https://api.pagerduty.com/incidents/Q2CKYRLH85UNN4"));
         actual.Service.Summary.Should().Be("Webhook Tester");
         actual.Service.HtmlUrl.Should().Be(new Uri("https://aldaviva.pagerduty.com/services/PNE3JZM"));
+        actual.Service.AccountSubdomain.Should().Be("aldaviva");
         actual.Service.Id.Should().Be("PNE3JZM");
         actual.Service.Self.Should().Be(new Uri("https://api.pagerduty.com/services/PNE3JZM"));
         actual.Service.Type.Should().Be(ReferenceType.ServiceReference);

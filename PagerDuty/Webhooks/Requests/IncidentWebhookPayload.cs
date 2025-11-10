@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Pager.Duty.Webhooks.Requests;
 
-public class IncidentWebhookPayload: AbstractWebhookPayload<IncidentEventType> {
+public class IncidentWebhookPayload: AbstractWebhookPayload<IncidentEventType>, IBelongsToAccount {
 
     public const string ResourceType = "incident";
 
@@ -47,6 +47,8 @@ public class IncidentWebhookPayload: AbstractWebhookPayload<IncidentEventType> {
         "triggered"             => IncidentEventType.Triggered,
         "unacknowledged"        => IncidentEventType.Unacknowledged
     };
+
+    public string? AccountSubdomain => BelongsToAccountHelper.GetAccountSubdomain(HtmlUrl);
 
 }
 

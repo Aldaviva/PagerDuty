@@ -8,11 +8,11 @@
         <IncludeSource>true</IncludeSource>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);IDE0290;CS8509</NoWarn>
 
-        <Version>1.2.0-beta4</Version>
+        <Version>$(ProjectVersion)</Version>
         <Title>PagerDuty.Webhooks</Title>
         <PackageId>PagerDuty.Webhooks</PackageId>
         <Product>PagerDuty.Webhooks</Product>
@@ -47,9 +47,9 @@
     </ItemGroup>
     
     <Choose>
-        <When Condition="'$(Configuration)' == 'Release'">
+        <When Condition="'$(Configuration)' != 'Debug'">
             <ItemGroup>
-                <PackageReference Include="PagerDuty" Version="1.2.0-beta4" />
+                <PackageReference Include="PagerDuty" Version="$(ProjectVersion)" />
             </ItemGroup>
         </When>
         <Otherwise>
@@ -59,7 +59,7 @@
         </Otherwise>
     </Choose>
 
-    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(Configuration)' == 'Release'">
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(Configuration)' != 'Debug'">
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
 

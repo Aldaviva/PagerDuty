@@ -22,6 +22,7 @@
         1. [Handling exceptions](#handling-exceptions)
         1. [Cleaning up](#cleaning-up)
 1. [Webhooks](#webhooks)
+    - [Installation](#installation-1)
     - [Configuration](#configuration-1)
     - [Usage](#usage-1)
         1. [Events](#events)
@@ -32,6 +33,7 @@
 <!-- /MarkdownTOC -->
 
 ## Quick Start
+
 ```cmd
 dotnet add package PagerDuty
 ```
@@ -42,7 +44,7 @@ using var pagerDuty = new PagerDuty("my service's integration key");
 AlertResponse alertResponse = await pagerDuty.Send(new TriggerAlert(Severity.Error, "My Alert"));
 Console.WriteLine("Triggered alert, waiting 30 seconds before resolving...");
 
-await Task.Delay(30 * 1000);
+await Task.Delay(TimeSpan.FromSeconds(30));
 await pagerDuty.Send(new ResolveAlert(alertResponse.DedupKey));
 Console.WriteLine("Resolved alert.");
 ```
@@ -55,7 +57,7 @@ Console.WriteLine("Resolved alert.");
     - [.NET Core 2.0 or later](https://dotnet.microsoft.com/en-us/download/dotnet)
     - [.NET Framework 4.5.2 or later](https://dotnet.microsoft.com/en-us/download/dotnet-framework)
     - Any other runtime that supports [.NET Standard 2.0 or later](https://docs.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0#net-standard-versions)
-- [ASP.NET Core 8.0 runtime or later](https://dotnet.microsoft.com/en-us/apps/aspnet) if you want to receive [Webhooks](#webhooks)
+- [ASP.NET Core 6.0 runtime or later](https://dotnet.microsoft.com/en-us/apps/aspnet) if you want to receive [Webhooks](#webhooks)
 
 ## Installation
 
@@ -87,6 +89,7 @@ This library provides a strongly-typed client for the PagerDuty Events V2 API.
 `PagerDuty` instances can be reused to send multiple events to the same service over the lifetime of your application. You can add one to your dependency injection context and retain it for as long as you like. If you need to send events to multiple services, construct multiple `PagerDuty` instance objects.
 
 #### HTTP settings
+
 If you need to customize any of the settings for the HTTP connection to PagerDuty's API servers, you may optionally provide a custom [`HttpClient`](https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpclient) instance to the `IPagerDuty` object. This allows you to set a proxy server, TLS settings, concurrent connection count, [DNS TTL](https://docs.microsoft.com/en-us/dotnet/fundamentals/networking/httpclient-guidelines#dns-behavior), and other properties.
 
 If you don't set this property, a default `HttpClient` instance is used instead, and will be automatically disposed of when the `PagerDuty` instance is disposed of. If you do set this property to a custom `HttpClient` instance, `PagerDuty` won't dispose of it, so that you can reuse it in multiple places.
@@ -106,6 +109,7 @@ pagerDuty.HttpClient = new HttpClient(new SocketsHttpHandler {
 ```
 
 #### Base URL
+
 By default, this library sends event requests to the global PagerDuty cluster, `https://events.pagerduty.com/v2/`.
 
 You may change this by setting the `IPagerDuty.BaseUrl` property. For example, if your tenant is hosted in the European Union, you must change the base URL to the EU cluster:
@@ -211,7 +215,16 @@ pagerDuty.Dispose();
 
 ## Webhooks
 
-This project provides a library for a server-side HTTP resource which receives [Webhook V3](https://developer.pagerduty.com/docs/webhooks-overview) requests from PagerDuty. This allows PagerDuty to immediately push a notification to your server when an event occurs, like an incident being triggered or resolved. This is a reusable route handler for ASP.NET Core ≥ 8 web application servers.
+This project provides a library for a server-side HTTP resource which receives [Webhook V3](https://developer.pagerduty.com/docs/webhooks-overview) requests from PagerDuty. This allows PagerDuty to immediately push a notification to your server when an event occurs, like an incident being triggered or resolved. This is a reusable route handler for ASP.NET Core ≥ 6 web application servers.
+
+### Installation
+
+The server-side webhook resource is packaged in a separate library so that Events API V2 users don't need to depend on ASP.NET Core.
+
+```sh
+dotnet add package PagerDuty
+dotnet add package PagerDuty.Webhooks
+```
 
 ### Configuration
 
@@ -229,6 +242,7 @@ This project provides a library for a server-side HTTP resource which receives [
     1. Copy the Signing Secret and keep it someplace safe, beccause it won't be shown again and you'll need it to verify Webhook request authenticity.
 1. Construct a new **`WebhookResource`** instance in your project, passing your signing secret as a constructor parameter.
     ```cs
+    using Pager.Duty;
     using Pager.Duty.Webhooks;
 
     IWebhookResource webhookResource = new WebhookResource(pagerDutySecrets: "1yo7GugPm02PTHj6t34vcrZIxc9oLLVNWpk/qegNNg6I92ruxyElaklrHnw+z1gc");
@@ -236,6 +250,7 @@ This project provides a library for a server-side HTTP resource which receives [
     If you have multiple Webhooks pointing to the same server, you can pass multiple signing secrets in an enumerable or array.
 
 ### Usage
+
 1. Create an ASP.NET Core web application.
     ```cs
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -247,11 +262,6 @@ This project provides a library for a server-side HTTP resource which receives [
     await webapp.RunAsync();
     ```
     If these types can't be found, set your `.csproj` root element's `sdk` attribute value to `Microsoft.NET.Sdk.Web`.
-1. Install PagerDuty libraries.
-    ```sh
-    dotnet add package PagerDuty
-    dotnet add package PagerDuty.Webhooks
-    ```
 1. Add a route to your server that uses the webhook resource's handler function.
     ```cs
     webapp.MapPost("/pagerduty", webhookResource.HandlePostRequest);
@@ -265,9 +275,10 @@ This project provides a library for a server-side HTTP resource which receives [
     webhookResource.IncidentReceived += (sender, incident) =>
         Console.WriteLine($"#{incident.IncidentNumber} {incident.EventType}: {incident.Title} is now {incident.Status}");
     ```
-1. [Run your web application in a server like IIS or Kestrel.](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/?view=aspnetcore-8.0&tabs=windows)
+1. [Run your web application in a server like IIS or Kestrel.](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/?view=aspnetcore-9.0&tabs=windows)
 
 #### Events
+
 The following [events](https://developer.pagerduty.com/docs/webhooks-overview#event-types) are available, corresponding to the thing that changed (subject).
 - `PingReceived`
 - `IncidentReceived`
@@ -293,6 +304,7 @@ To determine the action (verb) that occurred on the subject, read the `IWebhookP
 - `Unacknowledged`
 
 ## Examples
+
 - [Sample program](https://github.com/Aldaviva/PagerDuty/blob/master/Sample/Sample.cs)
 - [LaundryDuty](https://github.com/Aldaviva/LaundryDuty)
 - [DryerDuty](https://github.com/Aldaviva/DryerDuty)

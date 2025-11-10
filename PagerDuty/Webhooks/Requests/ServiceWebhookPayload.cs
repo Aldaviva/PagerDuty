@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Pager.Duty.Webhooks.Requests;
 
-public class ServiceWebhookPayload: AbstractWebhookPayload<ServiceEventType> {
+public class ServiceWebhookPayload: AbstractWebhookPayload<ServiceEventType>, IBelongsToAccount {
 
     public const string ResourceType = "service";
 
@@ -19,6 +19,8 @@ public class ServiceWebhookPayload: AbstractWebhookPayload<ServiceEventType> {
         "deleted" => ServiceEventType.Deleted,
         "updated" => ServiceEventType.Updated
     };
+
+    public string? AccountSubdomain => BelongsToAccountHelper.GetAccountSubdomain(HtmlUrl);
 
 }
 

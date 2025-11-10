@@ -44,7 +44,11 @@ public class WebhookPayloadMetadata {
 
 }
 
-public record PagerDutyReference(string Id, ReferenceType Type, Uri? HtmlUrl, Uri? Self, string? Summary);
+public record PagerDutyReference(string Id, ReferenceType Type, Uri? HtmlUrl, Uri? Self, string? Summary): IBelongsToAccount {
+
+    public string? AccountSubdomain => BelongsToAccountHelper.GetAccountSubdomain(HtmlUrl);
+
+}
 
 public enum ReferenceType {
 

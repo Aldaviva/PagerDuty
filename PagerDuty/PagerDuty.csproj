@@ -8,11 +8,11 @@
         <IncludeSource>true</IncludeSource>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);IDE0290;CS8509</NoWarn>
+        <NoWarn>$(NoWarn);IDE0290;8509;8524</NoWarn>
 
-        <Version>1.2.0-beta4</Version>
+        <Version>$(ProjectVersion)</Version>
         <Title>PagerDuty</Title>
         <PackageId>PagerDuty</PackageId>
         <Product>PagerDuty</Product>
@@ -35,7 +35,7 @@
         <AdditionalFiles Include="ExceptionAdjustments.txt" />
         <InternalsVisibleTo Include="PagerDuty.Webhooks;Tests;Tests.Webhooks" />
         <None Include="icon.png;..\Readme.md" Pack="true" PackagePath="\" />
-        <None Include="..\.github*\**" Visible="true" />
+        <None Include="..\.github*\**;..\*.props" Visible="true" />
     </ItemGroup>
 
     <ItemGroup>
@@ -47,7 +47,7 @@
         <Reference Include="System.Net.Http" />
     </ItemGroup>
 
-    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(Configuration)' == 'Release'">
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(Configuration)' != 'Debug'">
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
 
