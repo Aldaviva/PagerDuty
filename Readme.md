@@ -239,7 +239,7 @@ dotnet add package PagerDuty.Webhooks
     1. Choose whether events should be fired for all Services in your account, or just one Service.
     1. Choose which Events should be fired.
     1. Click **Add Webhook**.
-    1. Copy the Signing Secret and keep it someplace safe, beccause it won't be shown again and you'll need it to verify Webhook request authenticity.
+    1. Copy the Signing Secret and keep it someplace safe, because it won't be shown again and you'll need it to verify Webhook request authenticity.
 1. Construct a new **`WebhookResource`** instance in your project, passing your signing secret as a constructor parameter.
     ```cs
     using Pager.Duty;
