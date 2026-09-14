@@ -26,19 +26,25 @@ jobs:
         domain: ${{github.repository_owner}}
         
     - name: Restore
-      run: dotnet restore
+      run: dotnet restore PagerDuty -p:Configuration=Release
 
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
-      
-    - name: Pack
-      run: dotnet pack ${{ env.ProjectName }} --no-build --configuration Release
+    - name: Build and pack
+      run: |
+        $binPath = [System.IO.Path]::GetFullPath("./bin/")
+        New-Item $binPath -ItemType Directory -ErrorAction SilentlyContinue
+
+        dotnet build ${{ env.ProjectName }} --configuration Release --no-restore
+        dotnet pack ${{ env.ProjectName }} --configuration Release --no-build --output $binPath
+
+        dotnet restore ${{ env.ProjectName }}.Webhooks --source "https://api.nuget.org/v3/index.json" --source $binPath -p:Configuration=Release
+        dotnet build ${{ env.ProjectName }}.Webhooks --configuration Release --no-restore
+        dotnet pack ${{ env.ProjectName }}.Webhooks --configuration Release --no-build --output $binPath
 
     - name: Test
       run: |
         dotnet test --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --settings Tests/coverlet.runsettings --logger trx
         Out-File -InputObject "TEST_EXIT_CODE=$LASTEXITCODE" -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
-        Get-ChildItem Tests\TestResults\*\coverage.info | Rename-Item -NewName lcov.info
+        Get-ChildItem .\Tests\TestResults -Filter coverage.info -Depth 1 | ForEach-Object { Move-Item -Path $_.FullName -Destination ([System.IO.Path]::ChangeExtension($_.FullName, "lcov")) }
         exit 0
 
     - name: Upload test report
@@ -48,6 +54,7 @@ jobs:
       uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
+        format: lcov
 
     - name: Stop if tests failed
       run: exit $env:TEST_EXIT_CODE
@@ -56,5 +63,5 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: ${{ env.ProjectName }}.nupkg
-        path: ${{ env.ProjectName }}/bin/Release/*.*nupkg
+        path: /bin/*.*nupkg
         if-no-files-found: error
