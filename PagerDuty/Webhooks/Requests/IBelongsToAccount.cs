@@ -2,6 +2,7 @@ using System;
 
 namespace Pager.Duty.Webhooks.Requests;
 
+/// <summary>Entity associated with an account domain name</summary>
 public interface IBelongsToAccount {
 
     /// <summary>
@@ -20,7 +21,7 @@ internal static class BelongsToAccountHelper {
         if (htmlUrl is null) return null;
         string host = htmlUrl.Host;
         int    end  = -1;
-        for (int i = 0; end == -1 && i < BaseDomains.Length; i++) {
+        for (long i = 0; end == -1 && i < BaseDomains.LongLength; i++) {
             end = host.LastIndexOf(BaseDomains[i], StringComparison.OrdinalIgnoreCase);
         }
         return end == -1 ? host : host.Substring(0, end);

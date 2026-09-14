@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using Pager.Duty.Webhooks.Requests;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -14,36 +15,66 @@ using System.Threading.Tasks;
 
 namespace Pager.Duty.Webhooks;
 
+/// <summary>
+/// <para>PagerDuty webhook callback HTTP resource</para>
+/// <para>Usage:<code>
+/// WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+/// await using WebApplication webapp = builder.Build();
+/// 
+/// var webhookResource = new WebhookResource(pagerDutySecrets: "abc");
+/// webapp.MapPost("/pagerduty", webhookResource.HandlePostRequest);
+/// webhookResource.IncidentReceived += (sender, incident) =>
+///     Console.WriteLine($"#{incident.IncidentNumber} {incident.EventType}: {incident.Title} is now {incident.Status}");
+/// 
+/// await webapp.RunAsync();</code></para>
+/// </summary>
 public class WebhookResource: IWebhookResource {
 
     private const string SignatureVersion = "v1";
 
     private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
 
-    private static readonly IReadOnlyDictionary<string, Type> PayloadTypes = new Dictionary<string, Type> {
-        [PingWebhookPayload.ResourceType]                     = typeof(PingWebhookPayload),
-        [IncidentWebhookPayload.ResourceType]                 = typeof(IncidentWebhookPayload),
-        [IncidentNoteWebhookPayload.ResourceType]             = typeof(IncidentNoteWebhookPayload),
-        [IncidentConferenceBridgeWebhookPayload.ResourceType] = typeof(IncidentConferenceBridgeWebhookPayload),
-        [IncidentFieldValuesWebhookPayload.ResourceType]      = typeof(IncidentFieldValuesWebhookPayload),
-        [IncidentStatusUpdateWebhookPayload.ResourceType]     = typeof(IncidentStatusUpdateWebhookPayload),
-        [IncidentResponderWebhookPayload.ResourceType]        = typeof(IncidentResponderWebhookPayload),
-        [IncidentWorkflowInstanceWebhookPayload.ResourceType] = typeof(IncidentWorkflowInstanceWebhookPayload),
-        [ServiceWebhookPayload.ResourceType]                  = typeof(ServiceWebhookPayload)
-    };
+    private static readonly ReadOnlyDictionary<string, Type> PayloadTypes = new(new Dictionary<string, Type> {
+        [PingWebhookPayload.DataType]                     = typeof(PingWebhookPayload),
+        [IncidentWebhookPayload.DataType]                 = typeof(IncidentWebhookPayload),
+        [IncidentNoteWebhookPayload.DataType]             = typeof(IncidentNoteWebhookPayload),
+        [IncidentConferenceBridgeWebhookPayload.DataType] = typeof(IncidentConferenceBridgeWebhookPayload),
+        [IncidentFieldValuesWebhookPayload.DataType]      = typeof(IncidentFieldValuesWebhookPayload),
+        [IncidentStatusUpdateWebhookPayload.DataType]     = typeof(IncidentStatusUpdateWebhookPayload),
+        [IncidentResponderWebhookPayload.DataType]        = typeof(IncidentResponderWebhookPayload),
+        [IncidentWorkflowInstanceWebhookPayload.DataType] = typeof(IncidentWorkflowInstanceWebhookPayload),
+        [ServiceWebhookPayload.DataType]                  = typeof(ServiceWebhookPayload)
+    });
 
     private readonly ICollection<byte[]> _pagerDutySecrets;
 
     private ILogger<WebhookResource>? _logger;
 
+    /// <inheritdoc/>
     public event EventHandler<PingWebhookPayload>? PingReceived;
+
+    /// <inheritdoc/>
     public event EventHandler<IncidentWebhookPayload>? IncidentReceived;
+
+    /// <inheritdoc/>
     public event EventHandler<IncidentNoteWebhookPayload>? IncidentNoteReceived;
+
+    /// <inheritdoc/>
     public event EventHandler<IncidentConferenceBridgeWebhookPayload>? IncidentConferenceBridgeReceived;
+
+    /// <inheritdoc/>
     public event EventHandler<IncidentFieldValuesWebhookPayload>? IncidentFieldValuesReceived;
+
+    /// <inheritdoc/>
     public event EventHandler<IncidentStatusUpdateWebhookPayload>? IncidentStatusUpdateReceived;
+
+    /// <inheritdoc/>
     public event EventHandler<IncidentResponderWebhookPayload>? IncidentResponderReceived;
+
+    /// <inheritdoc/>
     public event EventHandler<IncidentWorkflowInstanceWebhookPayload>? IncidentWorkflowInstanceReceived;
+
+    /// <inheritdoc/>
     public event EventHandler<ServiceWebhookPayload>? ServiceReceived;
 
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="pagerDutySecrets"/> is empty</exception>
@@ -54,6 +85,8 @@ public class WebhookResource: IWebhookResource {
         }
     }
 
+    /// <inheritdoc/>
+    // ExceptionAdjustment: M:System.IO.TextReader.ReadToEnd -T:System.IO.IOException
     public async Task HandlePostRequest(HttpContext httpContext) {
         HttpRequest  req = httpContext.Request;
         HttpResponse res = httpContext.Response;
@@ -93,8 +126,9 @@ public class WebhookResource: IWebhookResource {
             return;
         }
 
-        if (!(payloadEnvelope.Event.Data["type"]?.Value<string>() is { } dataTypeName && PayloadTypes.TryGetValue(dataTypeName, out Type? dataType))) {
-            _logger.LogWarning("Unrecognized data type {type} received in PagerDuty webhook, ignoring", payloadEnvelope.Event.ResourceType);
+        string? dataTypeName = payloadEnvelope.Event.Data["type"]?.Value<string>();
+        if (!(dataTypeName is not null && PayloadTypes.TryGetValue(dataTypeName, out Type? dataType))) {
+            _logger.LogWarning("Unrecognized data type {type} and resource type {resourceType} received in PagerDuty webhook, ignoring", dataTypeName, payloadEnvelope.Event.ResourceType);
             return;
         }
 

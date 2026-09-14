@@ -8,4 +8,4 @@ namespace System.Runtime.CompilerServices;
 /// <see href="https://stackoverflow.com/questions/62648189/testing-c-sharp-9-0-in-vs2019-cs0518-isexternalinit-is-not-defined-or-imported/62656145#62656145" />
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-internal class IsExternalInit;
+internal sealed class IsExternalInit;

@@ -269,10 +269,12 @@ public class PagerDutyTest {
 
     [Fact]
     public void BaseUrlDeniesInvalidUris() {
-        string maxLengthPath = new(Enumerable.Repeat('p', 65489).ToArray());
-        Uri    uri           = new($"https://events.pagerduty.com/{maxLengthPath}/");
-        Action thrower       = () => { _pagerDuty.BaseUrl = uri; };
-        thrower.Should().Throw<ArgumentOutOfRangeException>();
+        if (Environment.Version < new Version(9, 0, 0)) { // new URI(URI, URI) can't throw a UriFormatException in .NET 9 or later because the length restriction was removed
+            string maxLengthPath = new(Enumerable.Repeat('p', 65489).ToArray());
+            Uri    uri           = new($"https://events.pagerduty.com/{maxLengthPath}/");
+            Action thrower       = () => { _pagerDuty.BaseUrl = uri; };
+            thrower.Should().Throw<ArgumentOutOfRangeException>();
+        }
     }
 
 }

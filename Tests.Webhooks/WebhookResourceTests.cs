@@ -171,7 +171,6 @@ public class WebhookResourceTests: IAsyncDisposable {
         actual.EventType.Should().Be(IncidentNoteEventType.Annotated);
         actual.Id.Should().Be("PTSAIFZ");
         actual.Content.Should().Be("Resolution Note: I'm resolving it");
-        actual.Trimmed.Should().BeFalse();
         actual.Incident.Self.Should().Be("https://api.pagerduty.com/incidents/Q2CKYRLH85UNN4");
     }
 

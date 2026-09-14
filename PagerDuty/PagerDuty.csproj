@@ -13,22 +13,21 @@
         <NoWarn>$(NoWarn);IDE0290;8509;8524</NoWarn>
 
         <Version>$(ProjectVersion)</Version>
-        <Title>PagerDuty</Title>
-        <PackageId>PagerDuty</PackageId>
-        <Product>PagerDuty</Product>
         <Description>Trigger, acknowledge, and resolve Alerts and create Changes using the PagerDuty Events API V2.</Description>
         <Authors>Ben Hutchison</Authors>
         <Company>$(Authors)</Company>
-        <Copyright>© 2025 $(Authors)</Copyright>
-        <RepositoryUrl>https://github.com/Aldaviva/PagerDuty.git</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
+        <Copyright>© 2026 $(Authors)</Copyright>
         <PackageTags>pagerduty</PackageTags>
         <PackageProjectUrl>https://github.com/Aldaviva/PagerDuty</PackageProjectUrl>
+        <RepositoryUrl>$(PackageProjectUrl).git</RepositoryUrl>
+        <PackageReleaseNotes>$(PackageProjectUrl)/releases/tag/$(Version)</PackageReleaseNotes>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageIcon>icon.png</PackageIcon>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
+        <WarningsAsErrors>$(WarningsAsErrors);CA1859</WarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,8 +38,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="All" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
     
     <ItemGroup Condition="$(TargetFramework) == 'net452'">

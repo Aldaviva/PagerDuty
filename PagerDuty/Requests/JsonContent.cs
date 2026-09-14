@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Pager.Duty.Requests;
 
-internal class JsonContent: HttpContent {
+internal sealed class JsonContent: HttpContent {
 
     private const string ContentType = "application/json";
 

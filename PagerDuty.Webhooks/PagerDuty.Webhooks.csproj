@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
@@ -13,22 +13,21 @@
         <NoWarn>$(NoWarn);IDE0290;CS8509</NoWarn>
 
         <Version>$(ProjectVersion)</Version>
-        <Title>PagerDuty.Webhooks</Title>
-        <PackageId>PagerDuty.Webhooks</PackageId>
-        <Product>PagerDuty.Webhooks</Product>
         <Description>Receive PagerDuty incident updates by receiving Webhooks V3 requests using ASP.NET Core.</Description>
         <Authors>Ben Hutchison</Authors>
         <Company>$(Authors)</Company>
-        <Copyright>© 2025 $(Authors)</Copyright>
-        <RepositoryUrl>https://github.com/Aldaviva/PagerDuty.git</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
+        <Copyright>© 2026 $(Authors)</Copyright>
         <PackageTags>pagerduty webhook</PackageTags>
         <PackageProjectUrl>https://github.com/Aldaviva/PagerDuty</PackageProjectUrl>
+        <RepositoryUrl>$(PackageProjectUrl).git</RepositoryUrl>
+        <PackageReleaseNotes>$(PackageProjectUrl)/releases/tag/$(Version)</PackageReleaseNotes>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageIcon>icon.png</PackageIcon>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
+        <WarningsAsErrors>$(WarningsAsErrors);CA1859</WarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,7 +38,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="[10.0.112,10.0.200)" PrivateAssets="All" />
     </ItemGroup>
     
     <ItemGroup>

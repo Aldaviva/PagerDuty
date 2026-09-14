@@ -35,7 +35,7 @@
 ## Quick Start
 
 ```cmd
-dotnet add package PagerDuty
+dotnet package add PagerDuty
 ```
 ```cs
 using Pager.Duty;
@@ -62,7 +62,7 @@ Console.WriteLine("Resolved alert.");
 ## Installation
 
 You can install this library into your project from [NuGet Gallery](https://www.nuget.org/packages/PagerDuty):
-- `dotnet add package PagerDuty`
+- `dotnet package add PagerDuty`
 - `Install-Package PagerDuty`
 - Go to Project › Manage NuGet Packages in Visual Studio and search for `PagerDuty`
 
@@ -222,8 +222,7 @@ This project provides a library for a server-side HTTP resource which receives [
 The server-side webhook resource is packaged in a separate library so that Events API V2 users don't need to depend on ASP.NET Core.
 
 ```sh
-dotnet add package PagerDuty
-dotnet add package PagerDuty.Webhooks
+dotnet package add PagerDuty.Webhooks
 ```
 
 ### Configuration
