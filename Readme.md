@@ -3,7 +3,7 @@
 
 [![Nuget](https://img.shields.io/nuget/v/PagerDuty?logo=nuget&color=blue)](https://www.nuget.org/packages/PagerDuty/) [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Aldaviva/PagerDuty/dotnetpackage.yml?branch=master&logo=github)](https://github.com/Aldaviva/PagerDuty/actions/workflows/dotnetpackage.yml) [![Testspace](https://img.shields.io/testspace/tests/Aldaviva/Aldaviva:PagerDuty/master?passed_label=passing&failed_label=failing&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4NTkgODYxIj48cGF0aCBkPSJtNTk4IDUxMy05NCA5NCAyOCAyNyA5NC05NC0yOC0yN3pNMzA2IDIyNmwtOTQgOTQgMjggMjggOTQtOTQtMjgtMjh6bS00NiAyODctMjcgMjcgOTQgOTQgMjctMjctOTQtOTR6bTI5My0yODctMjcgMjggOTQgOTQgMjctMjgtOTQtOTR6TTQzMiA4NjFjNDEuMzMgMCA3Ni44My0xNC42NyAxMDYuNS00NFM1ODMgNzUyIDU4MyA3MTBjMC00MS4zMy0xNC44My03Ni44My00NC41LTEwNi41UzQ3My4zMyA1NTkgNDMyIDU1OWMtNDIgMC03Ny42NyAxNC44My0xMDcgNDQuNXMtNDQgNjUuMTctNDQgMTA2LjVjMCA0MiAxNC42NyA3Ny42NyA0NCAxMDdzNjUgNDQgMTA3IDQ0em0wLTU1OWM0MS4zMyAwIDc2LjgzLTE0LjgzIDEwNi41LTQ0LjVTNTgzIDE5Mi4zMyA1ODMgMTUxYzAtNDItMTQuODMtNzcuNjctNDQuNS0xMDdTNDczLjMzIDAgNDMyIDBjLTQyIDAtNzcuNjcgMTQuNjctMTA3IDQ0cy00NCA2NS00NCAxMDdjMCA0MS4zMyAxNC42NyA3Ni44MyA0NCAxMDYuNVMzOTAgMzAyIDQzMiAzMDJ6bTI3NiAyODJjNDIgMCA3Ny42Ny0xNC44MyAxMDctNDQuNXM0NC02NS4xNyA0NC0xMDYuNWMwLTQyLTE0LjY3LTc3LjY3LTQ0LTEwN3MtNjUtNDQtMTA3LTQ0Yy00MS4zMyAwLTc2LjY3IDE0LjY3LTEwNiA0NHMtNDQgNjUtNDQgMTA3YzAgNDEuMzMgMTQuNjcgNzYuODMgNDQgMTA2LjVTNjY2LjY3IDU4NCA3MDggNTg0em0tNTU3IDBjNDIgMCA3Ny42Ny0xNC44MyAxMDctNDQuNXM0NC02NS4xNyA0NC0xMDYuNWMwLTQyLTE0LjY3LTc3LjY3LTQ0LTEwN3MtNjUtNDQtMTA3LTQ0Yy00MS4zMyAwLTc2LjgzIDE0LjY3LTEwNi41IDQ0UzAgMzkxIDAgNDMzYzAgNDEuMzMgMTQuODMgNzYuODMgNDQuNSAxMDYuNVMxMDkuNjcgNTg0IDE1MSA1ODR6IiBmaWxsPSIjZmZmIi8%2BPC9zdmc%2B)](https://aldaviva.testspace.com/spaces/247338) [![Coveralls](https://img.shields.io/coveralls/github/Aldaviva/PagerDuty?logo=coveralls)](https://coveralls.io/github/Aldaviva/PagerDuty?branch=master)
 
-*Trigger, acknowledge, and resolve [Alerts](https://support.pagerduty.com/docs/alerts) and create [Changes](https://support.pagerduty.com/docs/change-events) using the [PagerDuty Events API V2](https://developer.pagerduty.com/docs/events-api-v2/overview/). Handle [Webhook V3](https://developer.pagerduty.com/docs/webhooks-overview) requests.*
+*.NET libraries that can trigger, acknowledge, and resolve [Alerts](https://support.pagerduty.com/docs/alerts) and create [Changes](https://support.pagerduty.com/docs/change-events) using the [PagerDuty Events API V2](https://developer.pagerduty.com/docs/events-api-v2/overview/), and handle [Webhook V3](https://developer.pagerduty.com/docs/webhooks-overview) requests.*
 
 <!-- MarkdownTOC autolink="true" bracket="round" levels="1,2,3,4" bullets="1.,-" -->
 
@@ -21,7 +21,7 @@
         1. [Creating a Change](#creating-a-change)
         1. [Handling exceptions](#handling-exceptions)
         1. [Cleaning up](#cleaning-up)
-1. [Webhooks](#webhooks)
+1. [Webhooks V3](#webhooks-v3)
     - [Installation](#installation-1)
     - [Configuration](#configuration-1)
     - [Usage](#usage-1)
@@ -40,7 +40,8 @@ dotnet package add PagerDuty
 ```cs
 using Pager.Duty;
 
-using var pagerDuty = new PagerDuty("my service's integration key");
+using PagerDuty pagerDuty = new("my service's integration key");
+
 AlertResponse alertResponse = await pagerDuty.Send(new TriggerAlert(Severity.Error, "My Alert"));
 Console.WriteLine("Triggered alert, waiting 30 seconds before resolving...");
 
@@ -213,9 +214,9 @@ When you're done with a `PagerDuty` instance, call `PagerDuty.Dispose()` to clea
 pagerDuty.Dispose();
 ```
 
-## Webhooks
+## Webhooks V3
 
-This project provides a library for a server-side HTTP resource which receives [Webhook V3](https://developer.pagerduty.com/docs/webhooks-overview) requests from PagerDuty. This allows PagerDuty to immediately push a notification to your server when an event occurs, like an incident being triggered or resolved. This is a reusable route handler for ASP.NET Core ≥ 6 web application servers.
+This project also provides a library for a server-side HTTP resource which receives [Webhook V3](https://developer.pagerduty.com/docs/webhooks-overview) requests from PagerDuty. This allows PagerDuty to immediately push a notification to your web server using an HTTP POST request when an event occurs, like an incident being triggered or resolved. This is a reusable route handler for ASP.NET Core ≥ 6 web application servers.
 
 ### Installation
 
@@ -261,7 +262,7 @@ dotnet package add PagerDuty.Webhooks
     await webapp.RunAsync();
     ```
     If these types can't be found, set your `.csproj` root element's `sdk` attribute value to `Microsoft.NET.Sdk.Web`.
-1. Add a route to your server that uses the webhook resource's handler function.
+1. Add a route to your server that uses the `HandlePostRequest` method of the [webhook resource created previously](#configuration-1).
     ```cs
     webapp.MapPost("/pagerduty", webhookResource.HandlePostRequest);
     ```
@@ -304,10 +305,11 @@ To determine the action (verb) that occurred on the subject, read the `IWebhookP
 
 ## Examples
 
-- [Sample program](https://github.com/Aldaviva/PagerDuty/blob/master/Sample/Sample.cs)
+- [Sample Events program](https://github.com/Aldaviva/PagerDuty/blob/master/Sample/Sample.cs)
+- [Sample Webhooks program](https://github.com/Aldaviva/PagerDuty/blob/master/Sample.Webhooks/Program.cs)
 - [LaundryDuty](https://github.com/Aldaviva/LaundryDuty)
 - [DryerDuty](https://github.com/Aldaviva/DryerDuty)
-- [FreshPager](https://github.com/Aldaviva/FreshPager)
+- [EmergencyPager](https://github.com/Aldaviva/EmergencyPager)
 
 ## References
 

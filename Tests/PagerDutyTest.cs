@@ -261,6 +261,7 @@ public class PagerDutyTest {
     [InlineData("ftp://events.pagerduty.com/")]
     [InlineData("mailto:events.pagerduty.com")]
     [InlineData("file:///c:/windows/system32/calc.exe")]
+    [InlineData("//server/share/file")]
     public void BaseUrlDeniesNonHttpSchemes(string url) {
         Uri    uri     = new(url);
         Action thrower = () => { _pagerDuty.BaseUrl = uri; };
@@ -269,7 +270,7 @@ public class PagerDutyTest {
 
     [Fact]
     public void BaseUrlDeniesInvalidUris() {
-        if (Environment.Version < new Version(9, 0, 0)) { // new URI(URI, URI) can't throw a UriFormatException in .NET 9 or later because the length restriction was removed
+        if (Environment.Version < new Version(9, 0, 0)) { // My usage of `new Uri(Uri, Uri)` can't throw a UriFormatException in .NET 9 or later because the length restriction was removed
             string maxLengthPath = new(Enumerable.Repeat('p', 65489).ToArray());
             Uri    uri           = new($"https://events.pagerduty.com/{maxLengthPath}/");
             Action thrower       = () => { _pagerDuty.BaseUrl = uri; };

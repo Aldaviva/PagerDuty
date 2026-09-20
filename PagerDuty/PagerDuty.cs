@@ -32,7 +32,6 @@ public class PagerDuty: IPagerDuty {
     private readonly string           _integrationKey;
     private readonly Lazy<HttpClient> _builtInHttpClient = new(LazyThreadSafetyMode.ExecutionAndPublication);
 
-    private Uri         _baseUrl = new("https://events.pagerduty.com/v2/", UriKind.Absolute);
     private HttpClient? _customHttpClient;
 
     /// <inheritdoc />
@@ -51,7 +50,7 @@ public class PagerDuty: IPagerDuty {
 
     /// <inheritdoc />
     public Uri BaseUrl {
-        get => _baseUrl;
+        get;
         set {
             if (value.IsAbsoluteUri && value.Scheme.ToLowerInvariant() is "http" or "https") {
                 try {
@@ -61,8 +60,8 @@ public class PagerDuty: IPagerDuty {
                         value        =  builder.Uri;
                     }
 
-                    _        = new Uri(value, new TriggerAlert(Severity.Info, string.Empty).ApiUriPath);
-                    _baseUrl = value;
+                    _     = new Uri(value, new TriggerAlert(Severity.Info, string.Empty).ApiUriPath);
+                    field = value;
                     return;
                 } catch (UriFormatException) {
                     // throw ArgumentOutOfRangeException below
@@ -71,7 +70,7 @@ public class PagerDuty: IPagerDuty {
 
             throw new ArgumentOutOfRangeException(nameof(BaseUrl), value, "must be an HTTPS or HTTP URL");
         }
-    }
+    } = new("https://events.pagerduty.com/v2/", UriKind.Absolute);
 
     /// <summary>
     /// <para>Create a new Service-specific instance of a client that sends Events to the PagerDuty Events API V2.</para>
@@ -120,10 +119,10 @@ public class PagerDuty: IPagerDuty {
                 string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 string message      = $"Failed to send {typeof(Event)} to {uri}";
                 WebApplicationException exception = statusCode switch {
-                    HttpStatusCode.BadRequest                                         => new BadRequest(message),
-                    (HttpStatusCode) 429                                              => new RateLimited(message),
-                    >= HttpStatusCode.InternalServerError and <= (HttpStatusCode) 599 => new InternalServerError((int) statusCode, message),
-                    _                                                                 => new WebApplicationException((int) statusCode, message)
+                    HttpStatusCode.BadRequest                                        => new BadRequest(message),
+                    (HttpStatusCode) 429                                             => new RateLimited(message),
+                    >= HttpStatusCode.InternalServerError and < (HttpStatusCode) 600 => new InternalServerError((int) statusCode, message),
+                    _                                                                => new WebApplicationException((int) statusCode, message)
                 };
                 exception.Response = responseBody;
                 throw exception;
