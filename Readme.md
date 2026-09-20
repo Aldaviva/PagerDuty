@@ -58,7 +58,7 @@ Console.WriteLine("Resolved alert.");
     - [.NET Core 2.0 or later](https://dotnet.microsoft.com/en-us/download/dotnet)
     - [.NET Framework 4.5.2 or later](https://dotnet.microsoft.com/en-us/download/dotnet-framework)
     - Any other runtime that supports [.NET Standard 2.0 or later](https://docs.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0#net-standard-versions)
-- [ASP.NET Core 6.0 runtime or later](https://dotnet.microsoft.com/en-us/apps/aspnet) if you want to receive [Webhooks](#webhooks)
+- [ASP.NET Core 6.0 runtime or later](https://dotnet.microsoft.com/en-us/apps/aspnet) if you want to receive [Webhooks](#webhooks-v3)
 
 ## Installation
 
